@@ -34,3 +34,5 @@ Open http://localhost:5173
 ## Status
 
 Prototype. All data is illustrative.
+
+## Screenshots 

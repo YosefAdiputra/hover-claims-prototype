@@ -29,6 +29,7 @@ Desk adjusters spend hours translating inspection evidence into Xactimate line i
 3. **Confidence is visible.** Adjusters see what the AI is sure about and what it isn't — no black boxes.
 4. **Edits are cheap.** Modifying a line item should take one click, not five.
 5. **Carrier-ready output.** Native Xactimate compatibility is non-negotiable.
+6. **Speed is a feature.** If the adjuster can't complete a review faster than they could manually, nothing else matters.
 
 ## 5. Assumptions
 

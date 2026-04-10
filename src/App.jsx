@@ -4,7 +4,7 @@ import {
   CheckCircle2, AlertTriangle, Sparkles, ArrowRight, ArrowLeft,
   Edit3, Check, X, Shield, Home, Layers, MapPin, Calendar, User,
   Zap, Eye, MoreHorizontal, Send, Clock, FileCheck, Maximize2, Info,
-  Hexagon, Activity, TrendingUp, Building2
+  Hexagon, Activity, TrendingUp, Building2, CloudHail, Wind, Droplets
 } from 'lucide-react';
 
 // ============ MOCK DATA ============
@@ -115,6 +115,37 @@ const CONFIDENCE_COLORS = {
   low:  { dot: 'bg-rose-500',    text: 'text-rose-700',    bg: 'bg-rose-50',    border: 'border-rose-200',    ring: 'ring-rose-500/20' },
 };
 const confBand = (c) => c == null ? 'low' : c >= 90 ? 'high' : c >= 75 ? 'med' : 'low';
+
+const LossTypeBadge = ({ lossType }) => {
+  const configs = {
+    Hail: {
+      icon: CloudHail,
+      styles: 'bg-amber-50 text-amber-700 border-amber-200'
+    },
+    Wind: {
+      icon: Wind,
+      styles: 'bg-sky-50 text-sky-700 border-sky-200'
+    },
+    Water: {
+      icon: Droplets,
+      styles: 'bg-blue-50 text-blue-700 border-blue-200'
+    },
+  };
+
+  const config = configs[lossType] || {
+    icon: AlertTriangle,
+    styles: 'bg-stone-50 text-stone-700 border-stone-200'
+  };
+
+  const Icon = config.icon;
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${config.styles}`}>
+      <Icon className="w-2.5 h-2.5" />
+      {lossType}
+    </span>
+  );
+};
 
 // ============ MAIN COMPONENT ============
 export default function HoverClaimsPrototype() {
@@ -317,7 +348,7 @@ function Dashboard({ onOpen }) {
               <div className="text-[13px] text-stone-900 font-medium">{c.address}</div>
               <div className="text-[11px] text-stone-500">{c.city}</div>
             </div>
-            <div className="text-[13px] text-stone-600">{c.loss}</div>
+            <div><LossTypeBadge lossType={c.loss} /></div>
             <div className="text-[13px] text-stone-600">{c.date}</div>
             <div>
               <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${statusStyles[c.status]}`}>

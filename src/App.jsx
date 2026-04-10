@@ -91,12 +91,18 @@ const INITIAL_LINE_ITEMS = [
 ];
 
 const DASHBOARD_CLAIMS = [
-  { id: 'CLM-2026-04812', address: '4421 Oak Ridge Dr', city: 'Henderson, NV', loss: 'Hail', date: 'Apr 6', status: 'draft_ready', confidence: 94, total: 18420, clickable: true },
-  { id: 'CLM-2026-04807', address: '892 Desert Willow Ln', city: 'Las Vegas, NV', loss: 'Wind', date: 'Apr 6', status: 'draft_ready', confidence: 91, total: 12840 },
-  { id: 'CLM-2026-04803', address: '15 Summit Ridge Ct', city: 'Reno, NV', loss: 'Hail', date: 'Apr 5', status: 'needs_review', confidence: 72, total: 24100 },
-  { id: 'CLM-2026-04801', address: '2204 Canyon View Dr', city: 'Sparks, NV', loss: 'Water', date: 'Apr 5', status: 'processing', confidence: null, total: null },
-  { id: 'CLM-2026-04795', address: '778 Juniper Hill Rd', city: 'Carson City, NV', loss: 'Hail', date: 'Apr 4', status: 'draft_ready', confidence: 97, total: 8420 },
-  { id: 'CLM-2026-04790', address: '3301 Red Rock Blvd', city: 'Henderson, NV', loss: 'Wind', date: 'Apr 4', status: 'manual', confidence: null, total: null },
+  { id: 'CLM-2026-04812', address: '4421 Oak Ridge Dr', city: 'Henderson, NV', loss: 'Hail', date: 'Apr 6', status: 'draft_ready', confidence: 94, total: 18420, clickable: true,
+    image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop' },
+  { id: 'CLM-2026-04807', address: '892 Desert Willow Ln', city: 'Las Vegas, NV', loss: 'Wind', date: 'Apr 6', status: 'draft_ready', confidence: 91, total: 12840,
+    image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=400&h=300&fit=crop' },
+  { id: 'CLM-2026-04803', address: '15 Summit Ridge Ct', city: 'Reno, NV', loss: 'Hail', date: 'Apr 5', status: 'needs_review', confidence: 72, total: 24100,
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop' },
+  { id: 'CLM-2026-04801', address: '2204 Canyon View Dr', city: 'Sparks, NV', loss: 'Water', date: 'Apr 5', status: 'processing', confidence: null, total: null,
+    image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop' },
+  { id: 'CLM-2026-04795', address: '778 Juniper Hill Rd', city: 'Carson City, NV', loss: 'Hail', date: 'Apr 4', status: 'draft_ready', confidence: 97, total: 8420,
+    image: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&h=300&fit=crop' },
+  { id: 'CLM-2026-04790', address: '3301 Red Rock Blvd', city: 'Henderson, NV', loss: 'Wind', date: 'Apr 4', status: 'manual', confidence: null, total: null,
+    image: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=400&h=300&fit=crop' },
 ];
 
 // ============ HELPERS ============

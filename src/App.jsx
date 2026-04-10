@@ -91,12 +91,18 @@ const INITIAL_LINE_ITEMS = [
 ];
 
 const DASHBOARD_CLAIMS = [
-  { id: 'CLM-2026-04812', address: '4421 Oak Ridge Dr', city: 'Henderson, NV', loss: 'Hail', date: 'Apr 6', status: 'draft_ready', confidence: 94, total: 18420, clickable: true },
-  { id: 'CLM-2026-04807', address: '892 Desert Willow Ln', city: 'Las Vegas, NV', loss: 'Wind', date: 'Apr 6', status: 'draft_ready', confidence: 91, total: 12840 },
-  { id: 'CLM-2026-04803', address: '15 Summit Ridge Ct', city: 'Reno, NV', loss: 'Hail', date: 'Apr 5', status: 'needs_review', confidence: 72, total: 24100 },
-  { id: 'CLM-2026-04801', address: '2204 Canyon View Dr', city: 'Sparks, NV', loss: 'Water', date: 'Apr 5', status: 'processing', confidence: null, total: null },
-  { id: 'CLM-2026-04795', address: '778 Juniper Hill Rd', city: 'Carson City, NV', loss: 'Hail', date: 'Apr 4', status: 'draft_ready', confidence: 97, total: 8420 },
-  { id: 'CLM-2026-04790', address: '3301 Red Rock Blvd', city: 'Henderson, NV', loss: 'Wind', date: 'Apr 4', status: 'manual', confidence: null, total: null },
+  { id: 'CLM-2026-04812', address: '4421 Oak Ridge Dr', city: 'Henderson, NV', loss: 'Hail', date: 'Apr 6', status: 'draft_ready', confidence: 94, total: 18420, clickable: true,
+    image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop' },
+  { id: 'CLM-2026-04807', address: '892 Desert Willow Ln', city: 'Las Vegas, NV', loss: 'Wind', date: 'Apr 6', status: 'draft_ready', confidence: 91, total: 12840,
+    image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=400&h=300&fit=crop' },
+  { id: 'CLM-2026-04803', address: '15 Summit Ridge Ct', city: 'Reno, NV', loss: 'Hail', date: 'Apr 5', status: 'needs_review', confidence: 72, total: 24100,
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop' },
+  { id: 'CLM-2026-04801', address: '2204 Canyon View Dr', city: 'Sparks, NV', loss: 'Water', date: 'Apr 5', status: 'processing', confidence: null, total: null,
+    image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop' },
+  { id: 'CLM-2026-04795', address: '778 Juniper Hill Rd', city: 'Carson City, NV', loss: 'Hail', date: 'Apr 4', status: 'draft_ready', confidence: 97, total: 8420,
+    image: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&h=300&fit=crop' },
+  { id: 'CLM-2026-04790', address: '3301 Red Rock Blvd', city: 'Henderson, NV', loss: 'Wind', date: 'Apr 4', status: 'manual', confidence: null, total: null,
+    image: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=400&h=300&fit=crop' },
 ];
 
 // ============ HELPERS ============
@@ -249,6 +255,8 @@ function TopNav({ screen, setScreen, totals }) {
 
 // ============ DASHBOARD ============
 function Dashboard({ onOpen }) {
+  const [expandedImage, setExpandedImage] = useState(null);
+
   const statusStyles = {
     draft_ready: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     needs_review: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -287,21 +295,22 @@ function Dashboard({ onOpen }) {
 
       {/* Claims table */}
       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
-        <div className="grid grid-cols-[1.6fr_2.2fr_0.9fr_0.8fr_1.2fr_1fr_1fr] gap-4 px-6 py-3 bg-stone-50/60 border-b border-stone-200 text-[11px] uppercase tracking-wider text-stone-500 font-medium">
-          <div>Claim ID</div>
-          <div>Property</div>
-          <div>Loss</div>
-          <div>Inspected</div>
-          <div>AI Draft</div>
-          <div className="text-right">Est. Total</div>
-          <div></div>
+        <div className="grid grid-cols-[1.3fr_1.8fr_0.7fr_0.7fr_1.1fr_0.9fr_0.7fr_0.8fr] gap-4 px-6 py-3 bg-stone-50/60 border-b border-stone-200 text-[11px] uppercase tracking-wider text-stone-500 font-medium items-center">
+        <div>Claim ID</div>
+        <div>Property</div>
+        <div>Loss</div>
+        <div>Inspected</div>
+        <div>AI Draft</div>
+        <div className="text-right">Est. Total</div>
+        <div></div>
+        <div className="text-center">Photo</div>
         </div>
         {DASHBOARD_CLAIMS.map((c, idx) => (
           <button
             key={c.id}
             onClick={() => c.clickable && onOpen()}
             disabled={!c.clickable}
-            className={`w-full grid grid-cols-[1.6fr_2.2fr_0.9fr_0.8fr_1.2fr_1fr_1fr] gap-4 px-6 py-4 text-left items-center border-b border-stone-100 last:border-0 transition-colors ${c.clickable ? 'hover:bg-stone-50 cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+            className={`w-full grid grid-cols-[1.3fr_1.8fr_0.7fr_0.7fr_1.1fr_0.9fr_0.7fr_0.8fr] gap-4 px-6 py-4 text-left items-center border-b border-stone-100 last:border-0 transition-colors ${c.clickable ? 'hover:bg-stone-50 cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
           >
             <div className="font-mono-ui text-[12px] text-stone-700">{c.id}</div>
             <div>
@@ -324,13 +333,16 @@ function Dashboard({ onOpen }) {
             <div className="text-right tabular">
               <div className="text-[13px] text-stone-900 font-medium">{fmt(c.total)}</div>
             </div>
-            <div className="flex justify-end">
-              {c.clickable && (
-                <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-2 py-1">
-                  Open <ArrowRight className="w-3 h-3" />
-                </span>
-              )}
-            </div>
+ <div className="flex justify-center">
+  <PropertyImage
+    src={c.image}
+    alt={`${c.address}, ${c.city}`}
+    onClick={(e) => {
+      e.stopPropagation();
+      setExpandedImage({ src: c.image, alt: `${c.address}, ${c.city}`, address: c.address, city: c.city });
+    }}
+  />
+</div>
           </button>
         ))}
       </div>
@@ -339,10 +351,62 @@ function Dashboard({ onOpen }) {
         <Info className="w-3 h-3" />
         <span>Demo: only the Henderson claim is clickable. All other data is illustrative.</span>
       </div>
-    </main>
+    {expandedImage && (
+  <PropertyImageLightbox image={expandedImage} onClose={() => setExpandedImage(null)} />
+)}</main>
+  );
+}
+function PropertyImage({ src, alt, onClick }) {
+  const [errored, setErrored] = useState(false);
+
+  if (errored || !src) {
+    return (
+      <div className="w-14 h-10 rounded-md bg-stone-100 border border-stone-200 flex items-center justify-center">
+        <Home className="w-3.5 h-3.5 text-stone-400" />
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      className="w-14 h-10 rounded-md overflow-hidden border border-stone-200 hover:border-stone-400 hover:ring-2 hover:ring-stone-900/10 transition-all"
+      aria-label={`Expand photo of ${alt}`}
+    >
+      <img
+        src={src}
+        alt={alt}
+        onError={() => setErrored(true)}
+        className="w-full h-full object-cover"
+      />
+    </button>
   );
 }
 
+function PropertyImageLightbox({ image, onClose }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-stone-950/90 backdrop-blur-md flex items-center justify-center p-8"
+      onClick={onClose}
+    >
+      <div className="max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="text-[11px] uppercase tracking-wider text-stone-400">Property photo</div>
+            <div className="text-white text-[16px] font-medium mt-0.5">{image.address}</div>
+            <div className="text-stone-400 text-[12px]">{image.city}</div>
+          </div>
+          <button onClick={onClose} className="text-stone-400 hover:text-white" aria-label="Close">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="bg-stone-900 rounded-xl overflow-hidden aspect-[4/3]">
+          <img src={image.src} alt={image.alt} className="w-full h-full object-cover" />
+        </div>
+      </div>
+    </div>
+  );
+}
 function MetricCard({ label, value, delta, accent }) {
   return (
     <div className="bg-white border border-stone-200 rounded-xl p-5">

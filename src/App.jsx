@@ -156,6 +156,8 @@ export default function HoverClaimsPrototype() {
   const [evidenceTab, setEvidenceTab] = useState('photos');
   const [expandedPhoto, setExpandedPhoto] = useState(null);
   const [attested, setAttested] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showGame, setShowGame] = useState(false);
 
   const selectedItem = lineItems.find(i => i.id === selectedItemId);
   const totals = useMemo(() => {
@@ -193,9 +195,10 @@ export default function HoverClaimsPrototype() {
         .font-sans-ui { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
         .font-mono-ui { font-family: 'JetBrains Mono', ui-monospace, monospace; }
         html, body, #root {
-          font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', ui-sans-serif, system-ui, sans-serif;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
+          background-color: #F5F5F7;
         }
         .tabular { font-variant-numeric: tabular-nums; }
         .touch-manipulation {
@@ -242,19 +245,45 @@ export default function HoverClaimsPrototype() {
           attested={attested}
           setAttested={setAttested}
           onBack={() => setScreen('review')}
-          onSubmit={() => setScreen('confirmation')}
+          onSubmit={() => setShowSuccessPopup(true)}
         />
       )}
       {screen === 'confirmation' && <Confirmation onReset={() => { setScreen('dashboard'); setLineItems(INITIAL_LINE_ITEMS); setAttested(false); }} totals={totals} />}
 
       {editingItem && <EditDrawer item={editingItem} onClose={() => setEditingItem(null)} onSave={handleSaveEdit} />}
       {expandedPhoto && <PhotoLightbox photo={expandedPhoto} onClose={() => setExpandedPhoto(null)} />}
+      {showSuccessPopup && (
+        <SuccessPopup
+          totals={totals}
+          onClose={() => setShowSuccessPopup(false)}
+          onBackToQueue={() => {
+            setShowSuccessPopup(false);
+            setScreen('dashboard');
+            setLineItems(INITIAL_LINE_ITEMS);
+            setAttested(false);
+          }}
+          onTakeBreak={() => {
+            setShowSuccessPopup(false);
+            setShowGame(true);
+          }}
+        />
+      )}
+      {showGame && (
+        <SeveranceGame
+          onClose={() => {
+            setShowGame(false);
+            setScreen('dashboard');
+            setLineItems(INITIAL_LINE_ITEMS);
+            setAttested(false);
+          }}
+        />
+      )}
     </div>
   );
 }
 
 // ============ TOP NAV ============
-function TopNav({ screen, setScreen, totals }) {
+function TopNav({ screen }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const crumbs = {
     dashboard: ['Claims'],
@@ -402,7 +431,7 @@ function Dashboard({ onOpen }) {
           <div className="text-[12px] uppercase tracking-wider text-gray-600 font-semibold">Claims Queue</div>
         </div>
 
-        {DASHBOARD_CLAIMS.map((c, idx) => (
+        {DASHBOARD_CLAIMS.map((c) => (
           <button
             key={c.id}
             onClick={() => c.clickable && onOpen()}
@@ -576,143 +605,184 @@ function Summary({ onBack, onReview, totals }) {
   const claimImage = DASHBOARD_CLAIMS.find(c => c.id === CLAIM.id)?.image;
 
   return (
-    <main className="max-w-[1200px] mx-auto px-4 md:px-8 py-6">
-      <button onClick={onBack} className="flex items-center gap-1.5 text-[14px] text-gray-500 hover:text-gray-900 mb-6 transition-colors touch-manipulation">
+    <main className="max-w-[1440px] mx-auto px-6 py-8 bg-[#F5F5F7] min-h-screen">
+      <button onClick={onBack} className="flex items-center gap-2 text-[15px] text-[#86868B] hover:text-[#1D1D1F] mb-8 transition-colors touch-manipulation font-medium">
         <ArrowLeft className="w-4 h-4" /> Back to queue
       </button>
 
-      {/* Section 1: Address and Status */}
+      {/* Header Section */}
       <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
-          <span className="font-mono-ui text-[13px] text-gray-500">{CLAIM.id}</span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 w-fit">
-            <Sparkles className="w-3 h-3" /> AI Draft Ready
-          </span>
-        </div>
-        <h1 className="font-display text-4xl md:text-5xl text-gray-900 leading-tight tracking-tight mb-5">{CLAIM.address}</h1>
-        <div className="flex flex-wrap items-center gap-6 text-[14px] text-gray-600">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-gray-400" />
-            <span>{CLAIM.city}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <User className="w-4 h-4 text-gray-400" />
-            <span>{CLAIM.policyholder}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-gray-400" />
-            <span>{CLAIM.carrier}</span>
-          </div>
+        <h1 className="text-5xl md:text-6xl font-semibold text-[#1D1D1F] leading-tight tracking-tight mb-3">{CLAIM.address}</h1>
+        <div className="flex items-center gap-4 text-[15px] text-[#86868B]">
+          <span>{CLAIM.city}</span>
+          <span>•</span>
+          <span className="font-mono text-[14px]">{CLAIM.id}</span>
         </div>
       </div>
 
-      {/* Section 2 & 3: Property Photo and Draft Estimate side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Section 2: Property Photo */}
-        <div>
-          <div className="text-[12px] uppercase tracking-wider text-gray-500 font-medium mb-4">Property Photo</div>
-          <div className="aspect-video rounded-xl overflow-hidden border border-gray-200 bg-gray-50 shadow-sm">
-            {claimImage ? (
-              <img
-                src={claimImage}
-                alt={`${CLAIM.address}, ${CLAIM.city}`}
-                className="w-full h-full object-contain"
-              />
-            ) : (
-              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                <Home className="w-8 h-8 text-gray-400" />
+      {/* 12-Column Grid Layout */}
+      <div className="grid grid-cols-12 gap-8">
+        {/* Main Content (Columns 1-8): Property Hero & Dossier */}
+        <div className="col-span-12 lg:col-span-8">
+          {/* Property Hero with Integrated Dossier */}
+          <div className="relative group shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-[20px] overflow-hidden bg-white">
+            {/* Wide Aspect Hero Image */}
+            <div className="aspect-[21/9] relative overflow-hidden bg-gradient-to-br from-black/5 to-black/10">
+              {claimImage ? (
+                <img
+                  src={claimImage}
+                  alt={`${CLAIM.address}, ${CLAIM.city}`}
+                  className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out"
+                  style={{filter: 'contrast(1.05) saturate(1.1)'}}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <Home className="w-12 h-12 text-[#86868B] mx-auto mb-3" />
+                    <div className="text-[#86868B] font-medium">Property Image</div>
+                  </div>
+                </div>
+              )}
+              {/* Glassmorphism Overlay Button */}
+              <div className="absolute bottom-4 right-4 backdrop-blur-md bg-white/20 rounded-[12px] border border-white/30 px-4 py-2 text-white font-medium text-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                View 84 Photos
               </div>
-            )}
+            </div>
+
+            {/* Integrated Property Dossier - No Gap */}
+            <div className="bg-[#F5F5F7] p-6 border-t border-gray-100">
+              <h3 className="text-[14px] font-semibold text-[#1D1D1F] mb-4 uppercase tracking-wide">Property Dossier</h3>
+              <div className="grid grid-cols-3 gap-x-6 gap-y-4">
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">YEAR BUILT</span>
+                  <span className="text-[14px] font-medium text-[#1D1D1F]">{CLAIM.yearBuilt}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">INSPECTOR</span>
+                  <span className="text-[14px] font-medium text-[#1D1D1F]">{CLAIM.inspector}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">SQUARE FOOTAGE</span>
+                  <span className="text-[14px] font-medium text-[#1D1D1F]">{CLAIM.squareFootage.toLocaleString()} sf</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">INSPECTION DATE</span>
+                  <span className="text-[14px] font-medium text-[#1D1D1F]">{CLAIM.inspectionDate}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">ROOF MATERIAL</span>
+                  <span className="text-[14px] font-medium text-[#1D1D1F]">{CLAIM.roofMaterial}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">PHOTOS</span>
+                  <span className="text-[14px] font-medium text-[#1D1D1F]">{CLAIM.photoCount}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">POLICY NUMBER</span>
+                  <span className="text-[12px] font-mono text-[#1D1D1F]">{CLAIM.policyNumber}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">MEASUREMENTS</span>
+                  <span className="text-[14px] font-medium text-[#1D1D1F]">{CLAIM.measurementCount}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Section 3: Draft Estimate */}
-        <div>
-          <div className="text-[12px] uppercase tracking-wider text-gray-500 font-medium mb-4">Draft Estimate</div>
-          <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 h-full flex flex-col justify-center">
-            <div className="font-display text-6xl text-gray-900 leading-none tabular mb-3">{fmt(totals.total)}</div>
-            <div className="text-[15px] text-gray-600 tabular">{totals.count} line items · {lineItemsSummary(totals)} </div>
+        {/* Control Center (Columns 9-12): Sticky AI Intelligence & Actions */}
+        <div className="col-span-12 lg:col-span-4 lg:sticky lg:top-8 lg:self-start">
+          {/* Unified Control Center - One Continuous Slab */}
+          <div className="bg-white rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.04)] overflow-hidden">
+
+            {/* Price Hero */}
+            <div className="p-6 text-center border-b border-gray-100">
+              <div className="text-[48px] font-semibold text-[#1D1D1F] leading-none tracking-tight mb-3">{fmt(totals.total)}</div>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 rounded-full text-blue-600 font-medium text-[13px] mb-2">
+                <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                94% Match
+              </div>
+              <div className="text-[14px] text-[#86868B]">{totals.count} line items • {totals.needsReview > 0 ? `${totals.needsReview} need review` : 'All items verified'}</div>
+            </div>
+
+            {/* AI Summary */}
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-7 h-7 rounded-full bg-[#0071E3]/10 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-[#0071E3]" />
+                </div>
+                <span className="text-[16px] font-semibold text-[#1D1D1F]">AI Summary</span>
+              </div>
+              <p className="text-[14px] text-[#1D1D1F] leading-relaxed mb-4">
+                Automated inspection analysis identified significant hail damage across 24.5 squares of roofing on the north and east-facing slopes. Damage density exceeds carrier replacement thresholds with consistent impact patterns and granule loss.
+              </p>
+              <div className="flex items-center gap-2 text-[13px] text-[#86868B]">
+                <Clock className="w-4 h-4" />
+                <span>Analysis completed in 2.4 seconds</span>
+              </div>
+            </div>
+
+            {/* Action Group - Status & Button */}
+            <div className="p-6">
+              {/* Status Indicators */}
+              <div className="space-y-3 mb-6">
+                {totals.needsReview > 0 && (
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-4 h-4 text-[#FF9F0A]" />
+                    <span className="text-[14px] text-[#FF9F0A] font-medium">{totals.needsReview} item needs attention</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-4 h-4 text-[#34C759]" />
+                  <span className="text-[14px] font-medium text-[#1D1D1F]">Ready for Review</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <FileCheck className="w-4 h-4 text-[#86868B]" />
+                  <span className="text-[14px] text-[#86868B]">Ready for Xactimate import</span>
+                </div>
+              </div>
+
+              {/* Primary Action Button */}
+              <button
+                onClick={onReview}
+                className="w-full bg-[#0071E3] hover:brightness-110 text-white px-6 py-4 rounded-[12px] text-[16px] font-semibold flex items-center justify-center gap-3 transition-all touch-manipulation shadow-sm"
+              >
+                Review AI Draft Scope
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <div className="text-center text-[13px] text-[#86868B] mt-3">
+                Estimated review time: 3-5 minutes
+              </div>
+            </div>
+
           </div>
         </div>
-      </div>
-
-      {/* Three cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 md:mb-8">
-        <InfoCard icon={Home} title="Property">
-          <DataRow label="Year built" value={CLAIM.yearBuilt} />
-          <DataRow label="Square footage" value={`${CLAIM.squareFootage.toLocaleString()} sf`} />
-          <DataRow label="Roof material" value={CLAIM.roofMaterial} />
-          <DataRow label="Policy" value={CLAIM.policyNumber} mono />
-        </InfoCard>
-        <InfoCard icon={Camera} title="Inspection">
-          <DataRow label="Inspector" value={CLAIM.inspector} />
-          <DataRow label="Date" value={CLAIM.inspectionDate} />
-          <DataRow label="Photos" value={CLAIM.photoCount} />
-          <DataRow label="Measurements" value={CLAIM.measurementCount} />
-        </InfoCard>
-        <InfoCard icon={Sparkles} title="AI Analysis" accent>
-          <DataRow label="Overall confidence" value="94%" highlight />
-          <DataRow label="Line items drafted" value={totals.count} />
-          <DataRow label="Flagged for review" value={totals.needsReview} amber={totals.needsReview > 0} />
-          <DataRow label="Processing time" value="2.4 sec" />
-        </InfoCard>
-      </div>
-
-      {/* AI Summary callout */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-8 relative overflow-hidden shadow-sm">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-50 rounded-full blur-3xl opacity-30 -translate-y-16 translate-x-16" />
-        <div className="relative">
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-4 h-4 text-emerald-600" />
-            <span className="text-[12px] uppercase tracking-wider text-emerald-700 font-semibold">AI Summary</span>
-          </div>
-          <p className="text-[15px] text-gray-700 leading-relaxed mb-4">
-            Hover AI has drafted a scope of <span className="font-semibold text-gray-900">{totals.count} line items totaling {fmt(totals.total)}</span> based on severe hail damage to the north and east roof slopes, gutter and downspout impact, and localized siding damage on the north elevation. <span className="font-semibold text-amber-700">One gutter line item needs your review</span> — the inspector did not capture gutter measurements in the field.
-          </p>
-          <div className="flex items-center gap-6 text-[13px] text-gray-600">
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Within carrier guidelines</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Evidence-grounded</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Xactimate-compatible</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <button className="text-[14px] text-gray-600 hover:text-gray-900 flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-          <Eye className="w-4 h-4" /> View inspection evidence only
-        </button>
-        <button
-          onClick={onReview}
-          className="bg-gray-900 hover:bg-gray-800 text-white px-6 md:px-8 py-3 rounded-xl text-[15px] font-medium flex items-center justify-center gap-3 shadow-sm transition-colors touch-manipulation w-full md:w-auto"
-        >
-          Review AI Draft Scope <ArrowRight className="w-4 h-4" />
-        </button>
       </div>
     </main>
   );
 }
 
-function lineItemsSummary(t) {
-  return `${t.needsReview} need review`;
-}
+// function lineItemsSummary(t) {
+//   return `${t.needsReview} need review`;
+// }
 
-function InfoCard({ icon: Icon, title, children, accent }) {
-  return (
-    <div className={`bg-white border rounded-xl p-4 shadow-sm ${accent ? 'border-emerald-200 ring-1 ring-emerald-100/50' : 'border-gray-200'}`}>
-      <div className="flex items-center gap-2 mb-3">
-        <Icon className={`w-4 h-4 ${accent ? 'text-emerald-600' : 'text-gray-500'}`} />
-        <span className="text-[11px] uppercase tracking-wider text-gray-600 font-semibold">{title}</span>
-      </div>
-      <div className="space-y-3">{children}</div>
-    </div>
-  );
-}
+// function InfoCard({ icon: Icon, title, children, accent }) {
+//   return (
+//     <div className={`bg-white border rounded-lg p-3 shadow-sm ${accent ? 'border-emerald-200 ring-1 ring-emerald-100/50' : 'border-gray-200'}`}>
+//       <div className="flex items-center gap-2 mb-2">
+//         <Icon className={`w-3.5 h-3.5 ${accent ? 'text-emerald-600' : 'text-gray-500'}`} />
+//         <span className="text-[10px] uppercase tracking-wider text-gray-600 font-semibold">{title}</span>
+//       </div>
+//       <div className="space-y-2">{children}</div>
+//     </div>
+//   );
+// }
 
 function DataRow({ label, value, mono, highlight, amber }) {
   return (
-    <div className="flex items-baseline justify-between text-[14px]">
+    <div className="flex items-baseline justify-between text-[12px]">
       <span className="text-gray-500">{label}</span>
-      <span className={`${mono ? 'font-mono-ui text-[13px]' : ''} ${highlight ? 'text-emerald-700 font-semibold' : amber ? 'text-amber-700 font-semibold' : 'text-gray-900 font-semibold'} tabular`}>{value}</span>
+      <span className={`${mono ? 'font-mono-ui text-[11px]' : 'text-[12px]'} ${highlight ? 'text-emerald-700 font-semibold' : amber ? 'text-amber-700 font-semibold' : 'text-gray-900 font-medium'} tabular`}>{value}</span>
     </div>
   );
 }
@@ -994,49 +1064,58 @@ function PhotosView({ item, onExpand }) {
 }
 
 function PhotoCard({ label, index, onClick }) {
-  // Stylized roof/property photo using SVG gradient + texture
-  const variants = [
-    { from: '#44403c', to: '#78716c', accent: '#f59e0b' },
-    { from: '#57534e', to: '#92400e', accent: '#fbbf24' },
-    { from: '#3f3f46', to: '#71717a', accent: '#f97316' },
-    { from: '#52525b', to: '#a8a29e', accent: '#eab308' },
-    { from: '#44403c', to: '#57534e', accent: '#f59e0b' },
-    { from: '#3f3f46', to: '#78716c', accent: '#fbbf24' },
+  // Insurance adjuster hail damage inspection photo
+  const realisticPhotos = [
+    'https://media.istockphoto.com/id/488913912/photo/insurance-adjuster-marked-roof-with-hail-damage.jpg?s=612x612&w=0&k=20&c=5XvO8YpE7b_0rCUKK_8Fm0w7n-XN2S8yI5dBhB7T3vA=', // Insurance adjuster marking hail damage
+    'https://media.istockphoto.com/id/488913912/photo/insurance-adjuster-marked-roof-with-hail-damage.jpg?s=612x612&w=0&k=20&c=5XvO8YpE7b_0rCUKK_8Fm0w7n-XN2S8yI5dBhB7T3vA=', // Same image - different angle view
+    'https://media.istockphoto.com/id/488913912/photo/insurance-adjuster-marked-roof-with-hail-damage.jpg?s=612x612&w=0&k=20&c=5XvO8YpE7b_0rCUKK_8Fm0w7n-XN2S8yI5dBhB7T3vA=', // Same image - close-up view
+    'https://media.istockphoto.com/id/488913912/photo/insurance-adjuster-marked-roof-with-hail-damage.jpg?s=612x612&w=0&k=20&c=5XvO8YpE7b_0rCUKK_8Fm0w7n-XN2S8yI5dBhB7T3vA=', // Same image - overview
+    'https://media.istockphoto.com/id/488913912/photo/insurance-adjuster-marked-roof-with-hail-damage.jpg?s=612x612&w=0&k=20&c=5XvO8YpE7b_0rCUKK_8Fm0w7n-XN2S8yI5dBhB7T3vA=', // Same image - detail view
+    'https://media.istockphoto.com/id/488913912/photo/insurance-adjuster-marked-roof-with-hail-damage.jpg?s=612x612&w=0&k=20&c=5XvO8YpE7b_0rCUKK_8Fm0w7n-XN2S8yI5dBhB7T3vA=', // Same image - wide view
   ];
-  const v = variants[index % variants.length];
+
+  const photoUrl = realisticPhotos[index % realisticPhotos.length];
 
   return (
     <button onClick={onClick} className="group relative bg-white rounded-lg overflow-hidden border border-stone-200 hover:border-stone-300 hover:shadow-md transition-all text-left">
       <div className="aspect-[4/3] relative overflow-hidden">
-        <svg viewBox="0 0 400 300" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <linearGradient id={`grad-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor={v.from} />
-              <stop offset="100%" stopColor={v.to} />
-            </linearGradient>
-            <pattern id={`shingle-${index}`} x="0" y="0" width="40" height="16" patternUnits="userSpaceOnUse">
-              <rect width="40" height="16" fill="rgba(0,0,0,0.15)" />
-              <rect x="0" y="0" width="40" height="1" fill="rgba(255,255,255,0.08)" />
-              <rect x="20" y="8" width="40" height="1" fill="rgba(255,255,255,0.08)" />
-            </pattern>
-          </defs>
-          <rect width="400" height="300" fill={`url(#grad-${index})`} />
-          <rect width="400" height="300" fill={`url(#shingle-${index})`} />
-          {/* Damage indicators */}
-          {[...Array(8)].map((_, i) => {
-            const cx = 50 + (i * 47) % 320 + (index * 30) % 50;
-            const cy = 40 + (i * 31) % 220 + (index * 20) % 40;
+        <img
+          src={photoUrl}
+          alt={`Roof damage inspection photo ${index + 1}`}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            // Fallback to a solid color if image fails to load
+            e.target.style.display = 'none';
+            e.target.nextSibling.style.display = 'flex';
+          }}
+        />
+        {/* Fallback background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-stone-600 to-stone-800 flex items-center justify-center" style={{display: 'none'}}>
+          <Camera className="w-8 h-8 text-white/50" />
+        </div>
+
+        {/* Damage indicator overlays */}
+        <div className="absolute inset-0">
+          {[...Array(6)].map((_, i) => {
+            const left = 15 + (i * 47) % 70 + (index * 10) % 15;
+            const top = 20 + (i * 31) % 60 + (index * 8) % 20;
             return (
-              <g key={i}>
-                <circle cx={cx} cy={cy} r="12" fill="none" stroke={v.accent} strokeWidth="1.5" opacity="0.8" />
-                <circle cx={cx} cy={cy} r="3" fill={v.accent} opacity="0.9" />
-              </g>
+              <div
+                key={i}
+                className="absolute w-6 h-6 border-2 border-orange-400 rounded-full bg-orange-400/20 flex items-center justify-center"
+                style={{ left: `${left}%`, top: `${top}%` }}
+              >
+                <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+              </div>
             );
           })}
-          {/* Corner meta overlay */}
-          <rect x="8" y="8" width="60" height="18" rx="2" fill="rgba(0,0,0,0.6)" />
-          <text x="14" y="20" fontSize="10" fill="white" fontFamily="monospace">IMG_{String(index + 1).padStart(3, '0')}</text>
-        </svg>
+        </div>
+
+        {/* Corner meta overlay */}
+        <div className="absolute top-2 left-2 bg-black/60 backdrop-blur text-white text-[9px] font-mono px-2 py-1 rounded">
+          IMG_{String(index + 1).padStart(3, '0')}
+        </div>
+
         <div className="absolute top-2 right-2 bg-emerald-500/90 backdrop-blur text-white text-[9px] font-medium px-1.5 py-0.5 rounded flex items-center gap-1">
           <Sparkles className="w-2 h-2" /> AI
         </div>
@@ -1054,7 +1133,7 @@ function PhotoCard({ label, index, onClick }) {
   );
 }
 
-function ThreeDView({ item }) {
+function ThreeDView() {
   return (
     <div className="bg-white rounded-lg border border-stone-200 p-8">
       <div className="text-center mb-6">
@@ -1117,7 +1196,7 @@ function ThreeDView({ item }) {
   );
 }
 
-function MeasurementsView({ item }) {
+function MeasurementsView() {
   return (
     <div className="bg-white rounded-lg border border-stone-200 p-6">
       <div className="text-[12px] text-stone-600 mb-4">Measurements extracted from Hover 3D digital twin</div>
@@ -1631,5 +1710,219 @@ function Confirmation({ onReset, totals }) {
         </button>
       </div>
     </main>
+  );
+}
+
+// ============ SUCCESS POPUP ============
+function SuccessPopup({ totals, onClose, onBackToQueue, onTakeBreak }) {
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-[24px] shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="p-6 pb-4 text-center">
+          <div className="w-16 h-16 mx-auto rounded-full bg-[#34C759]/10 flex items-center justify-center mb-4">
+            <CheckCircle2 className="w-8 h-8 text-[#34C759]" strokeWidth={2} />
+          </div>
+          <h2 className="text-[24px] font-semibold text-[#1D1D1F] mb-2">Successfully Submitted!</h2>
+          <p className="text-[15px] text-[#86868B] leading-relaxed">
+            Claim {CLAIM.id} has been sent to Xactimate and is now in Summit Mutual's review queue.
+          </p>
+        </div>
+
+        {/* Claim Summary */}
+        <div className="px-6 pb-4">
+          <div className="bg-[#F5F5F7] rounded-[16px] p-4 mb-4">
+            <div className="grid grid-cols-2 gap-4 text-center">
+              <div>
+                <div className="text-[11px] uppercase tracking-wider text-[#86868B] font-medium">Total Estimate</div>
+                <div className="text-[24px] font-semibold text-[#1D1D1F] mt-1">{fmt(totals.total)}</div>
+              </div>
+              <div>
+                <div className="text-[11px] uppercase tracking-wider text-[#86868B] font-medium">Line Items</div>
+                <div className="text-[24px] font-semibold text-[#1D1D1F] mt-1">{totals.count}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Time Savings */}
+          <div className="bg-gradient-to-r from-[#0071E3]/5 to-[#34C759]/5 rounded-[16px] p-4 mb-6">
+            <div className="text-center mb-3">
+              <div className="text-[11px] uppercase tracking-wider text-[#86868B] font-medium">Time Saved vs Manual</div>
+              <div className="text-[32px] font-semibold text-[#0071E3] leading-none mt-1">
+                2.5<span className="text-[16px] text-[#86868B] ml-1">hours</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-black/5">
+              <div className="text-center">
+                <div className="text-[10px] uppercase tracking-wider text-[#86868B]">Manual Baseline</div>
+                <div className="text-[16px] font-medium text-[#1D1D1F] mt-1">~3.0 hrs</div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] uppercase tracking-wider text-[#86868B]">Your Time</div>
+                <div className="text-[16px] font-medium text-[#34C759] mt-1">28 min</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="px-6 pb-6 space-y-3">
+          <button
+            onClick={onBackToQueue}
+            className="w-full bg-[#0071E3] hover:brightness-110 text-white px-6 py-4 rounded-[12px] text-[16px] font-semibold flex items-center justify-center gap-3 transition-all"
+          >
+            Back to Claims Queue
+            <ArrowRight className="w-4 h-4" />
+          </button>
+          <button
+            onClick={onTakeBreak}
+            className="w-full bg-gradient-to-r from-[#34C759] to-[#30B64F] hover:brightness-110 text-white px-6 py-3 rounded-[12px] text-[15px] font-semibold flex items-center justify-center gap-3 transition-all"
+          >
+            🎮 Take a Break
+          </button>
+          <button
+            onClick={onClose}
+            className="w-full bg-[#F5F5F7] hover:bg-[#EBEBF0] text-[#1D1D1F] px-6 py-3 rounded-[12px] text-[15px] font-medium transition-all"
+          >
+            Stay on Final Review
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============ SEVERANCE GAME ============
+function SeveranceGame({ onClose }) {
+  const [numbers, setNumbers] = useState([]);
+  const [currentQuota, setCurrentQuota] = useState(0);
+  const [gameStarted, setGameStarted] = useState(false);
+
+  // Generate numbers for the sorting game
+  const generateNumbers = () => {
+    const newNumbers = [];
+    for (let i = 0; i < 10; i++) {
+      newNumbers.push({
+        id: i,
+        value: Math.floor(Math.random() * 100).toString().padStart(2, '0'),
+        isSorted: false
+      });
+    }
+    setNumbers(newNumbers);
+  };
+
+  // Start the game
+  const startGame = () => {
+    setGameStarted(true);
+    setCurrentQuota(0);
+    generateNumbers();
+  };
+
+  // Handle number sorting
+  const sortNumber = (id) => {
+    setNumbers(prev => prev.map(num =>
+      num.id === id ? { ...num, isSorted: true } : num
+    ));
+    setCurrentQuota(prev => prev + 1);
+
+    // Replace sorted number with new one after delay
+    setTimeout(() => {
+      setNumbers(prev => prev.map(num =>
+        num.id === id ? {
+          ...num,
+          value: Math.floor(Math.random() * 100).toString().padStart(2, '0'),
+          isSorted: false
+        } : num
+      ));
+    }, 500);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-[#003D2F] z-50 font-mono">
+      <div className="h-full flex flex-col">
+        {/* Top Border */}
+        <div className="h-2 bg-[#00A86B]"></div>
+
+        {!gameStarted ? (
+          /* Welcome Screen */
+          <div className="flex-1 flex items-center justify-center bg-[#003D2F]">
+            <div className="text-center max-w-2xl px-8">
+              <div className="text-[#00A86B] text-6xl font-bold mb-8 tracking-wider">
+                MACRODATA REFINEMENT
+              </div>
+              <div className="text-[#00A86B] text-xl mb-8 leading-relaxed">
+                Please sort the data below according to your employee handbook.
+              </div>
+              <div className="text-[#00A86B] text-lg mb-12">
+                Remember: All numbers are beautiful and deserve care.
+              </div>
+              <button
+                onClick={startGame}
+                className="bg-[#00A86B] hover:bg-[#00B86F] text-[#003D2F] px-12 py-4 text-2xl font-bold tracking-wider transition-colors"
+              >
+                BEGIN
+              </button>
+              <div className="mt-8">
+                <button
+                  onClick={onClose}
+                  className="text-[#00A86B] hover:text-[#00B86F] text-lg underline transition-colors"
+                >
+                  EXIT TO WORK
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Game Screen */
+          <div className="flex-1 bg-[#003D2F] p-8">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-8">
+              <div className="text-[#00A86B] text-2xl font-bold">
+                MDR - QUOTA: {currentQuota}
+              </div>
+              <button
+                onClick={onClose}
+                className="text-[#00A86B] hover:text-[#00B86F] text-lg underline transition-colors"
+              >
+                EXIT TO WORK
+              </button>
+            </div>
+
+            {/* Instructions */}
+            <div className="text-[#00A86B] text-xl mb-8 text-center">
+              Select the data below to sort it into the appropriate file.
+            </div>
+
+            {/* Data Grid */}
+            <div className="max-w-4xl mx-auto">
+              <div className="grid grid-cols-5 gap-6 mb-12">
+                {numbers.map(num => (
+                  <button
+                    key={num.id}
+                    onClick={() => !num.isSorted && sortNumber(num.id)}
+                    className={`aspect-square border-2 text-4xl font-bold transition-all duration-300 ${
+                      num.isSorted
+                        ? 'border-[#00A86B] bg-[#00A86B] text-[#003D2F] scale-95 opacity-50'
+                        : 'border-[#00A86B] text-[#00A86B] hover:bg-[#00A86B] hover:text-[#003D2F] hover:scale-105'
+                    }`}
+                    disabled={num.isSorted}
+                  >
+                    {num.value}
+                  </button>
+                ))}
+              </div>
+
+              {/* Bottom Text */}
+              <div className="text-[#00A86B] text-lg text-center">
+                Thank you for your service to Lumon Industries.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bottom Border */}
+        <div className="h-2 bg-[#00A86B]"></div>
+      </div>
+    </div>
   );
 }

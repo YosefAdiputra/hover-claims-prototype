@@ -800,7 +800,7 @@ function ReviewScreen({ lineItems, selectedItem, setSelectedItemId, onApprove, o
   }, [lineItems]);
 
   return (
-    <div className="h-[calc(100vh-56px)] flex flex-col">
+    <div className="min-h-[calc(100vh-56px)] md:h-[calc(100vh-56px)] flex flex-col">
       {/* Sub header */}
       <div className="border-b border-stone-200 bg-white px-4 md:px-6 py-3 flex-shrink-0">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -884,9 +884,9 @@ function ReviewScreen({ lineItems, selectedItem, setSelectedItemId, onApprove, o
       </div>
 
       {/* Three column layout - desktop / Mobile stacked layout */}
-      <div className="flex-1 md:grid md:grid-cols-[320px_1fr_320px] lg:grid-cols-[360px_1fr_360px] overflow-hidden">
+      <div className="flex-1 md:grid md:grid-cols-[320px_1fr_320px] lg:grid-cols-[360px_1fr_360px] md:overflow-hidden min-h-0">
         {/* LEFT: Line items */}
-        <div className={`md:border-r border-stone-200 bg-white overflow-y-auto ${mobileTab !== 'items' ? 'hidden md:block' : ''}`}>
+        <div className={`md:border-r border-stone-200 bg-white md:overflow-y-auto ${mobileTab !== 'items' ? 'hidden md:block' : 'overflow-y-auto h-full'}`}>
           <div className="p-4 border-b border-stone-100 sticky top-0 bg-white z-10">
             <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Scope Line Items</div>
           </div>
@@ -909,7 +909,7 @@ function ReviewScreen({ lineItems, selectedItem, setSelectedItemId, onApprove, o
         </div>
 
         {/* CENTER: Evidence */}
-        <div className={`bg-stone-50 overflow-y-auto ${mobileTab !== 'evidence' ? 'hidden md:block' : ''}`}>
+        <div className={`bg-stone-50 md:overflow-y-auto ${mobileTab !== 'evidence' ? 'hidden md:block' : 'overflow-y-auto h-full'}`}>
           {selectedItem && (
             <EvidencePanel
               item={selectedItem}
@@ -921,7 +921,7 @@ function ReviewScreen({ lineItems, selectedItem, setSelectedItemId, onApprove, o
         </div>
 
         {/* RIGHT: Confidence + actions */}
-        <div className={`md:border-l border-stone-200 bg-white overflow-y-auto ${mobileTab !== 'ai' ? 'hidden md:block' : ''}`}>
+        <div className={`md:border-l border-stone-200 bg-white md:overflow-y-auto ${mobileTab !== 'ai' ? 'hidden md:block' : 'overflow-y-auto h-full'}`}>
           {selectedItem && (
             <DetailPanel
               item={selectedItem}

@@ -1067,9 +1067,9 @@ function PhotoCard({ label, index, onClick }) {
   // Insurance adjuster hail damage inspection photo
   const realisticPhotos = [
     'https://media.istockphoto.com/id/1331204626/photo/roof-with-hail-damage-and-markings-from-inspection.jpg?s=1024x1024&w=is&k=20&c=XoUshW3oD6yUapSIK31_frX_tA1KHJhwNNF3pyewg0M=', // Insurance adjuster marking hail damage
-    'https://media.istockphoto.com/id/1331204626/photo/roof-with-hail-damage-and-markings-from-inspection.jpg?s=1024x1024&w=is&k=20&c=XoUshW3oD6yUapSIK31_frX_tA1KHJhwNNF3pyewg0M=', // Same image - different angle view
-    'https://media.istockphoto.com/id/1331204626/photo/roof-with-hail-damage-and-markings-from-inspection.jpg?s=1024x1024&w=is&k=20&c=XoUshW3oD6yUapSIK31_frX_tA1KHJhwNNF3pyewg0M=', // Same image - close-up view
-    'https://media.istockphoto.com/id/1331204626/photo/roof-with-hail-damage-and-markings-from-inspection.jpg?s=1024x1024&w=is&k=20&c=XoUshW3oD6yUapSIK31_frX_tA1KHJhwNNF3pyewg0M=', // Same image - overview
+    'https://media.istockphoto.com/id/1974119513/photo/roof-with-hail-damage-and-markings-from-inspection.jpg?s=1024x1024&w=is&k=20&c=i3nh1s_aMxsEkNp_PDCL81wVp7u-MyQuvnRN83-eXFc=', // Same image - different angle view
+    'https://media.istockphoto.com/id/2041202984/photo/roof-with-hail-damage-and-markings-from-inspection.jpg?s=1024x1024&w=is&k=20&c=IwGWJnbOnGLGmtvjciCdph3p3nvNtgaSwJWxeoIV0fk=', // Same image - close-up view
+    'https://media.istockphoto.com/id/2259570761/photo/residential-roof-inspection-due-to-insurance-claim-for-storm-damage-the-three-tab-asphalt.jpg?s=1024x1024&w=is&k=20&c=W42XAFfEvSVemt5AfUgbBvoYGAXTNdxwWojviFUMDPQ=', // Same image - overview
     'https://media.istockphoto.com/id/1331204626/photo/roof-with-hail-damage-and-markings-from-inspection.jpg?s=1024x1024&w=is&k=20&c=XoUshW3oD6yUapSIK31_frX_tA1KHJhwNNF3pyewg0M=', // Same image - detail view
     'https://media.istockphoto.com/id/1331204626/photo/roof-with-hail-damage-and-markings-from-inspection.jpg?s=1024x1024&w=is&k=20&c=XoUshW3oD6yUapSIK31_frX_tA1KHJhwNNF3pyewg0M=', // Same image - wide view
   ];

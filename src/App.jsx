@@ -229,6 +229,13 @@ export default function HoverClaimsPrototype() {
         .animate-slideUp {
           animation: slideUp 0.3s ease-out;
         }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
       `}</style>
 
       <TopNav screen={screen} setScreen={setScreen} totals={totals} />
@@ -1032,18 +1039,21 @@ function EvidencePanel({ item, tab, setTab, onExpand }) {
           <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Evidence for</div>
           <div className="text-[14px] font-medium text-stone-900 mt-0.5">{item.description}</div>
         </div>
-        <div className="flex items-center gap-1">
-          {tabs.map(t => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`flex items-center gap-1.5 px-3 py-2 text-[12px] font-medium border-b-2 -mb-px transition-colors ${tab === t.id ? 'border-stone-900 text-stone-900' : 'border-transparent text-stone-500 hover:text-stone-900'}`}
-            >
-              <t.icon className="w-3.5 h-3.5" />
-              {t.label}
-              {t.count != null && <span className="text-stone-400 tabular">({t.count})</span>}
-            </button>
-          ))}
+        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0">
+          <div className="flex items-center gap-1 min-w-max">
+            {tabs.map(t => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`flex items-center gap-1.5 px-3 py-2 text-[12px] font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${tab === t.id ? 'border-stone-900 text-stone-900' : 'border-transparent text-stone-500 hover:text-stone-900'}`}
+              >
+                <t.icon className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{t.label}</span>
+                <span className="sm:hidden">{t.label.split(' ')[0]}</span>
+                {t.count != null && <span className="text-stone-400 tabular">({t.count})</span>}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1285,11 +1295,20 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
   // Price comparison data for retailers
   const retailers = [
     {
+      name: 'Ace Hardware',
+      price: item.unitPrice,
+      availability: 'In Stock',
+      delivery: 'Same day',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Ace_Hardware_Logo.svg/320px-Ace_Hardware_Logo.svg.png',
+      color: 'red',
+      selected: true
+    },
+    {
       name: 'Home Depot',
       price: item.unitPrice * 1.08,
       availability: 'In Stock',
       delivery: '3-5 days',
-      logo: '🟠',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/TheHomeDepot.svg/320px-TheHomeDepot.svg.png',
       color: 'orange'
     },
     {
@@ -1297,24 +1316,15 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
       price: item.unitPrice * 1.12,
       availability: 'In Stock',
       delivery: '2-4 days',
-      logo: '🔵',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Lowes_logo_new.svg/320px-Lowes_logo_new.svg.png',
       color: 'blue'
     },
     {
-      name: 'Local Supply Co.',
-      price: item.unitPrice,
-      availability: 'In Stock',
-      delivery: 'Same day',
-      logo: '🏪',
-      color: 'green',
-      selected: true
-    },
-    {
-      name: 'BuilderMax Pro',
+      name: 'Tractor Supply',
       price: item.unitPrice * 1.15,
       availability: 'Limited',
       delivery: '5-7 days',
-      logo: '🏗️',
+      logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/1/14/Tractor_Supply_Company_logo.svg/320px-Tractor_Supply_Company_logo.svg.png',
       color: 'gray'
     }
   ].sort((a, b) => a.price - b.price);
@@ -1413,13 +1423,21 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
                     <div className="flex items-center gap-3">
                       {/* Logo */}
                       <div className={`
-                        w-10 h-10 rounded-lg flex items-center justify-center text-lg
-                        ${retailer.color === 'orange' ? 'bg-orange-100' : ''}
-                        ${retailer.color === 'blue' ? 'bg-blue-100' : ''}
-                        ${retailer.color === 'green' ? 'bg-emerald-100' : ''}
-                        ${retailer.color === 'gray' ? 'bg-gray-100' : ''}
+                        w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden
+                        ${retailer.color === 'red' ? 'bg-red-50' : ''}
+                        ${retailer.color === 'orange' ? 'bg-orange-50' : ''}
+                        ${retailer.color === 'blue' ? 'bg-blue-50' : ''}
+                        ${retailer.color === 'gray' ? 'bg-gray-50' : ''}
                       `}>
-                        {retailer.logo}
+                        <img
+                          src={retailer.logo}
+                          alt={`${retailer.name} logo`}
+                          className="w-full h-full object-contain p-1"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML = retailer.name.charAt(0);
+                          }}
+                        />
                       </div>
 
                       <div>
@@ -1457,7 +1475,7 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
               <div className="flex gap-3">
                 <button
                   onClick={() => {
-                    if (selectedRetailer && selectedRetailer !== 'Local Supply Co.') {
+                    if (selectedRetailer && selectedRetailer !== 'Ace Hardware') {
                       // Handle retailer change
                       onEdit();
                       setShowPriceComparison(false);

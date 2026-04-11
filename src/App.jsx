@@ -1295,11 +1295,20 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
   // Price comparison data for retailers
   const retailers = [
     {
+      name: 'Ace Hardware',
+      price: item.unitPrice,
+      availability: 'In Stock',
+      delivery: 'Same day',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Ace_Hardware_Logo.svg/320px-Ace_Hardware_Logo.svg.png',
+      color: 'red',
+      selected: true
+    },
+    {
       name: 'Home Depot',
       price: item.unitPrice * 1.08,
       availability: 'In Stock',
       delivery: '3-5 days',
-      logo: '🟠',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/TheHomeDepot.svg/320px-TheHomeDepot.svg.png',
       color: 'orange'
     },
     {
@@ -1307,24 +1316,15 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
       price: item.unitPrice * 1.12,
       availability: 'In Stock',
       delivery: '2-4 days',
-      logo: '🔵',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Lowes_logo_new.svg/320px-Lowes_logo_new.svg.png',
       color: 'blue'
     },
     {
-      name: 'Local Supply Co.',
-      price: item.unitPrice,
-      availability: 'In Stock',
-      delivery: 'Same day',
-      logo: '🏪',
-      color: 'green',
-      selected: true
-    },
-    {
-      name: 'BuilderMax Pro',
+      name: 'Tractor Supply',
       price: item.unitPrice * 1.15,
       availability: 'Limited',
       delivery: '5-7 days',
-      logo: '🏗️',
+      logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/1/14/Tractor_Supply_Company_logo.svg/320px-Tractor_Supply_Company_logo.svg.png',
       color: 'gray'
     }
   ].sort((a, b) => a.price - b.price);
@@ -1423,13 +1423,21 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
                     <div className="flex items-center gap-3">
                       {/* Logo */}
                       <div className={`
-                        w-10 h-10 rounded-lg flex items-center justify-center text-lg
-                        ${retailer.color === 'orange' ? 'bg-orange-100' : ''}
-                        ${retailer.color === 'blue' ? 'bg-blue-100' : ''}
-                        ${retailer.color === 'green' ? 'bg-emerald-100' : ''}
-                        ${retailer.color === 'gray' ? 'bg-gray-100' : ''}
+                        w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden
+                        ${retailer.color === 'red' ? 'bg-red-50' : ''}
+                        ${retailer.color === 'orange' ? 'bg-orange-50' : ''}
+                        ${retailer.color === 'blue' ? 'bg-blue-50' : ''}
+                        ${retailer.color === 'gray' ? 'bg-gray-50' : ''}
                       `}>
-                        {retailer.logo}
+                        <img
+                          src={retailer.logo}
+                          alt={`${retailer.name} logo`}
+                          className="w-full h-full object-contain p-1"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML = retailer.name.charAt(0);
+                          }}
+                        />
                       </div>
 
                       <div>
@@ -1467,7 +1475,7 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
               <div className="flex gap-3">
                 <button
                   onClick={() => {
-                    if (selectedRetailer && selectedRetailer !== 'Local Supply Co.') {
+                    if (selectedRetailer && selectedRetailer !== 'Ace Hardware') {
                       // Handle retailer change
                       onEdit();
                       setShowPriceComparison(false);

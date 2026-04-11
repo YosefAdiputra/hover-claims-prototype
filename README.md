@@ -2,7 +2,6 @@
 
 A clickable prototype exploring how AI can draft Xactimate-ready repair scopes from Hover inspection data, with adjuster-in-the-loop review and full evidence grounding.
 
-Built as a product challenge exercise for a Principal PM interview.
 
 ## What it demonstrates
 

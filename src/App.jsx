@@ -471,37 +471,78 @@ function MetricCard({ label, value, delta, accent }) {
 
 // ============ SUMMARY SCREEN ============
 function Summary({ onBack, onReview, totals }) {
+  const claimImage = DASHBOARD_CLAIMS.find(c => c.id === CLAIM.id)?.image;
+
   return (
-    <main className="max-w-[1200px] mx-auto px-6 py-10">
-      <button onClick={onBack} className="flex items-center gap-1.5 text-[13px] text-stone-500 hover:text-stone-900 mb-6">
-        <ArrowLeft className="w-3.5 h-3.5" /> Back to queue
+    <main className="max-w-[1200px] mx-auto px-8 py-6">
+      <button onClick={onBack} className="flex items-center gap-1.5 text-[14px] text-gray-500 hover:text-gray-900 mb-6 transition-colors">
+        <ArrowLeft className="w-4 h-4" /> Back to queue
       </button>
 
-      {/* Header */}
-      <div className="flex items-start justify-between mb-10">
-        <div>
-          <div className="flex items-center gap-3 mb-3">
-            <span className="font-mono-ui text-[12px] text-stone-500">{CLAIM.id}</span>
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border bg-emerald-50 text-emerald-700 border-emerald-200">
-              <Sparkles className="w-2.5 h-2.5" /> AI Draft Ready
+      {/* Header - 50/50 Split */}
+      <div className="grid grid-cols-2 gap-8 mb-8">
+        {/* Left Half: Claim Info */}
+        <div className="pr-6">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="font-mono-ui text-[13px] text-gray-500">{CLAIM.id}</span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <Sparkles className="w-3 h-3" /> AI Draft Ready
             </span>
           </div>
-          <h1 className="font-display text-5xl text-stone-900 leading-tight">{CLAIM.address}</h1>
-          <div className="flex items-center gap-4 mt-3 text-[13px] text-stone-500">
-            <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> {CLAIM.city}</span>
-            <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> {CLAIM.policyholder}</span>
-            <span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5" /> {CLAIM.carrier}</span>
+          <h1 className="font-display text-4xl text-gray-900 leading-tight tracking-tight mb-5">{CLAIM.address}</h1>
+          <div className="space-y-3 text-[14px] text-gray-600">
+            <div className="flex items-center gap-3 py-1">
+              <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center">
+                <MapPin className="w-3.5 h-3.5 text-gray-500" />
+              </div>
+              <span>{CLAIM.city}</span>
+            </div>
+            <div className="flex items-center gap-3 py-1">
+              <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center">
+                <User className="w-3.5 h-3.5 text-gray-500" />
+              </div>
+              <span>{CLAIM.policyholder}</span>
+            </div>
+            <div className="flex items-center gap-3 py-1">
+              <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center">
+                <Building2 className="w-3.5 h-3.5 text-gray-500" />
+              </div>
+              <span>{CLAIM.carrier}</span>
+            </div>
           </div>
         </div>
-        <div className="text-right">
-          <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Draft Estimate</div>
-          <div className="font-display text-6xl text-stone-900 leading-none tabular">{fmt(totals.total)}</div>
-          <div className="text-[12px] text-stone-500 mt-1 tabular">{totals.count} line items · {lineItemsSummary(totals)} </div>
+
+        {/* Right Half: Photo & Estimate */}
+        <div className="space-y-5">
+          {/* Property Photo */}
+          <div>
+            <div className="text-[11px] uppercase tracking-wider text-gray-500 font-medium mb-2">Property Photo</div>
+            <div className="w-full aspect-video rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+              {claimImage ? (
+                <img
+                  src={claimImage}
+                  alt={`${CLAIM.address}, ${CLAIM.city}`}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                  <Home className="w-7 h-7 text-gray-400" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Draft Estimate */}
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div className="text-[11px] uppercase tracking-wider text-gray-500 font-medium mb-3">Draft Estimate</div>
+            <div className="font-display text-4xl text-gray-900 leading-none tabular mb-2">{fmt(totals.total)}</div>
+            <div className="text-[13px] text-gray-600 tabular">{totals.count} line items · {lineItemsSummary(totals)} </div>
+          </div>
         </div>
       </div>
 
       {/* Three cards */}
-      <div className="grid grid-cols-3 gap-4 mb-10">
+      <div className="grid grid-cols-3 gap-4 mb-8">
         <InfoCard icon={Home} title="Property">
           <DataRow label="Year built" value={CLAIM.yearBuilt} />
           <DataRow label="Square footage" value={`${CLAIM.squareFootage.toLocaleString()} sf`} />
@@ -523,17 +564,17 @@ function Summary({ onBack, onReview, totals }) {
       </div>
 
       {/* AI Summary callout */}
-      <div className="bg-white border border-stone-200 rounded-xl p-6 mb-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full blur-3xl opacity-40 -translate-y-20 translate-x-20" />
+      <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-8 relative overflow-hidden shadow-sm">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-50 rounded-full blur-3xl opacity-30 -translate-y-16 translate-x-16" />
         <div className="relative">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-4 h-4 text-emerald-600" />
-            <span className="text-[11px] uppercase tracking-wider text-emerald-700 font-medium">AI Summary</span>
+            <span className="text-[12px] uppercase tracking-wider text-emerald-700 font-semibold">AI Summary</span>
           </div>
-          <p className="text-[15px] text-stone-700 leading-relaxed max-w-3xl">
-            Hover AI has drafted a scope of <span className="font-medium text-stone-900">{totals.count} line items totaling {fmt(totals.total)}</span> based on severe hail damage to the north and east roof slopes, gutter and downspout impact, and localized siding damage on the north elevation. <span className="font-medium text-amber-700">One gutter line item needs your review</span> — the inspector did not capture gutter measurements in the field.
+          <p className="text-[15px] text-gray-700 leading-relaxed mb-4">
+            Hover AI has drafted a scope of <span className="font-semibold text-gray-900">{totals.count} line items totaling {fmt(totals.total)}</span> based on severe hail damage to the north and east roof slopes, gutter and downspout impact, and localized siding damage on the north elevation. <span className="font-semibold text-amber-700">One gutter line item needs your review</span> — the inspector did not capture gutter measurements in the field.
           </p>
-          <div className="flex items-center gap-6 mt-5 text-[12px] text-stone-500">
+          <div className="flex items-center gap-6 text-[13px] text-gray-600">
             <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Within carrier guidelines</span>
             <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Evidence-grounded</span>
             <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Xactimate-compatible</span>
@@ -542,12 +583,12 @@ function Summary({ onBack, onReview, totals }) {
       </div>
 
       <div className="flex items-center justify-between">
-        <button className="text-[13px] text-stone-600 hover:text-stone-900 flex items-center gap-1.5">
-          <Eye className="w-3.5 h-3.5" /> View inspection evidence only
+        <button className="text-[14px] text-gray-600 hover:text-gray-900 flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+          <Eye className="w-4 h-4" /> View inspection evidence only
         </button>
         <button
           onClick={onReview}
-          className="bg-stone-900 hover:bg-stone-800 text-white px-6 py-3 rounded-lg text-[14px] font-medium flex items-center gap-2 shadow-sm"
+          className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 rounded-xl text-[15px] font-medium flex items-center gap-3 shadow-sm transition-colors"
         >
           Review AI Draft Scope <ArrowRight className="w-4 h-4" />
         </button>
@@ -562,21 +603,21 @@ function lineItemsSummary(t) {
 
 function InfoCard({ icon: Icon, title, children, accent }) {
   return (
-    <div className={`bg-white border rounded-xl p-5 ${accent ? 'border-emerald-200 ring-1 ring-emerald-100/50' : 'border-stone-200'}`}>
-      <div className="flex items-center gap-2 mb-4">
-        <Icon className={`w-4 h-4 ${accent ? 'text-emerald-600' : 'text-stone-400'}`} />
-        <span className="text-[11px] uppercase tracking-wider text-stone-600 font-medium">{title}</span>
+    <div className={`bg-white border rounded-xl p-4 shadow-sm ${accent ? 'border-emerald-200 ring-1 ring-emerald-100/50' : 'border-gray-200'}`}>
+      <div className="flex items-center gap-2 mb-3">
+        <Icon className={`w-4 h-4 ${accent ? 'text-emerald-600' : 'text-gray-500'}`} />
+        <span className="text-[11px] uppercase tracking-wider text-gray-600 font-semibold">{title}</span>
       </div>
-      <div className="space-y-2">{children}</div>
+      <div className="space-y-3">{children}</div>
     </div>
   );
 }
 
 function DataRow({ label, value, mono, highlight, amber }) {
   return (
-    <div className="flex items-baseline justify-between text-[13px]">
-      <span className="text-stone-500">{label}</span>
-      <span className={`${mono ? 'font-mono-ui text-[12px]' : ''} ${highlight ? 'text-emerald-700 font-semibold' : amber ? 'text-amber-700 font-medium' : 'text-stone-900 font-medium'} tabular`}>{value}</span>
+    <div className="flex items-baseline justify-between text-[14px]">
+      <span className="text-gray-500">{label}</span>
+      <span className={`${mono ? 'font-mono-ui text-[13px]' : ''} ${highlight ? 'text-emerald-700 font-semibold' : amber ? 'text-amber-700 font-semibold' : 'text-gray-900 font-semibold'} tabular`}>{value}</span>
     </div>
   );
 }

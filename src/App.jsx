@@ -581,64 +581,57 @@ function Summary({ onBack, onReview, totals }) {
         <ArrowLeft className="w-4 h-4" /> Back to queue
       </button>
 
-      {/* Header - responsive split */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-6 md:mb-8">
-        {/* Left Half: Claim Info */}
-        <div className="md:pr-6">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-4">
-            <span className="font-mono-ui text-[13px] text-gray-500">{CLAIM.id}</span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 w-fit">
-              <Sparkles className="w-3 h-3" /> AI Draft Ready
-            </span>
+      {/* Section 1: Address and Status */}
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+          <span className="font-mono-ui text-[13px] text-gray-500">{CLAIM.id}</span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 w-fit">
+            <Sparkles className="w-3 h-3" /> AI Draft Ready
+          </span>
+        </div>
+        <h1 className="font-display text-4xl md:text-5xl text-gray-900 leading-tight tracking-tight mb-5">{CLAIM.address}</h1>
+        <div className="flex flex-wrap items-center gap-6 text-[14px] text-gray-600">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-gray-400" />
+            <span>{CLAIM.city}</span>
           </div>
-          <h1 className="font-display text-3xl md:text-4xl text-gray-900 leading-tight tracking-tight mb-4 md:mb-5">{CLAIM.address}</h1>
-          <div className="space-y-3 text-[14px] text-gray-600">
-            <div className="flex items-center gap-3 py-1">
-              <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center">
-                <MapPin className="w-3.5 h-3.5 text-gray-500" />
+          <div className="flex items-center gap-2">
+            <User className="w-4 h-4 text-gray-400" />
+            <span>{CLAIM.policyholder}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-gray-400" />
+            <span>{CLAIM.carrier}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 2 & 3: Property Photo and Draft Estimate side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Section 2: Property Photo */}
+        <div>
+          <div className="text-[12px] uppercase tracking-wider text-gray-500 font-medium mb-4">Property Photo</div>
+          <div className="aspect-video rounded-xl overflow-hidden border border-gray-200 bg-gray-50 shadow-sm">
+            {claimImage ? (
+              <img
+                src={claimImage}
+                alt={`${CLAIM.address}, ${CLAIM.city}`}
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                <Home className="w-8 h-8 text-gray-400" />
               </div>
-              <span>{CLAIM.city}</span>
-            </div>
-            <div className="flex items-center gap-3 py-1">
-              <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center">
-                <User className="w-3.5 h-3.5 text-gray-500" />
-              </div>
-              <span>{CLAIM.policyholder}</span>
-            </div>
-            <div className="flex items-center gap-3 py-1">
-              <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center">
-                <Building2 className="w-3.5 h-3.5 text-gray-500" />
-              </div>
-              <span>{CLAIM.carrier}</span>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Right Half: Photo & Estimate */}
-        <div className="space-y-5">
-          {/* Property Photo */}
-          <div>
-            <div className="text-[11px] uppercase tracking-wider text-gray-500 font-medium mb-2">Property Photo</div>
-            <div className="w-full aspect-video rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
-              {claimImage ? (
-                <img
-                  src={claimImage}
-                  alt={`${CLAIM.address}, ${CLAIM.city}`}
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                  <Home className="w-7 h-7 text-gray-400" />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Draft Estimate */}
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <div className="text-[11px] uppercase tracking-wider text-gray-500 font-medium mb-3">Draft Estimate</div>
-            <div className="font-display text-4xl text-gray-900 leading-none tabular mb-2">{fmt(totals.total)}</div>
-            <div className="text-[13px] text-gray-600 tabular">{totals.count} line items · {lineItemsSummary(totals)} </div>
+        {/* Section 3: Draft Estimate */}
+        <div>
+          <div className="text-[12px] uppercase tracking-wider text-gray-500 font-medium mb-4">Draft Estimate</div>
+          <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 h-full flex flex-col justify-center">
+            <div className="font-display text-6xl text-gray-900 leading-none tabular mb-3">{fmt(totals.total)}</div>
+            <div className="text-[15px] text-gray-600 tabular">{totals.count} line items · {lineItemsSummary(totals)} </div>
           </div>
         </div>
       </div>

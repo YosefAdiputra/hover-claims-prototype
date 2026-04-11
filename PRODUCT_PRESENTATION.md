@@ -1,8 +1,5 @@
 # Hover Claims: AI-Powered Estimate Automation
-## Product Leadership Case Study
 
-*Presented by: Yosef Adiputra*
-*Product Challenge: Principal PM Interview Exercise*
 
 ---
 

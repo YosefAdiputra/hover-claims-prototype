@@ -1285,12 +1285,13 @@ function EmptyEvidence({ message }) {
 // ============ DETAIL PANEL (RIGHT) ============
 function DetailPanel({ item, onApprove, onEdit, onResolve }) {
   const [showPriceComparison, setShowPriceComparison] = useState(false);
-  const [selectedRetailer, setSelectedRetailer] = useState(null);
+  const [selectedRetailer, setSelectedRetailer] = useState('Ace Hardware');
+  const [currentPrice, setCurrentPrice] = useState(item.unitPrice);
   const band = confBand(item.confidence);
   const colors = CONFIDENCE_COLORS[band];
   const isException = item.status === 'needs_review';
   const isApproved = item.status === 'approved';
-  const lineTotal = item.qty != null ? item.qty * item.unitPrice : null;
+  const lineTotal = item.qty != null ? item.qty * currentPrice : null;
 
   // Price comparison data for retailers
   const retailers = [
@@ -1300,8 +1301,7 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
       availability: 'In Stock',
       delivery: 'Same day',
       logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Ace_Hardware_Logo.svg/3840px-Ace_Hardware_Logo.svg.png',
-      color: 'red',
-      selected: true
+      color: 'red'
     },
     {
       name: 'Home Depot',
@@ -1372,7 +1372,7 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
                 <Info className="w-2.5 h-2.5 text-stone-500 group-hover:text-stone-700" />
               </button>
             </div>
-            <span className="text-stone-900 tabular">{fmtDetail(item.unitPrice)}</span>
+            <span className="text-stone-900 tabular">{fmtDetail(currentPrice)}</span>
           </div>
           <div className="flex justify-between pt-2 border-t border-stone-100"><span className="text-stone-500">Line total</span><span className="text-stone-900 font-semibold tabular">{lineTotal != null ? fmt(lineTotal) : '—'}</span></div>
         </div>
@@ -1406,14 +1406,17 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
                   key={retailer.name}
                   className={`
                     relative p-4 rounded-xl border-2 transition-all cursor-pointer
-                    ${retailer.selected
+                    ${selectedRetailer === retailer.name
                       ? 'border-emerald-500 bg-emerald-50/50'
                       : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                     }
                   `}
-                  onClick={() => setSelectedRetailer(retailer.name)}
+                  onClick={() => {
+                    setSelectedRetailer(retailer.name);
+                    setCurrentPrice(retailer.price);
+                  }}
                 >
-                  {retailer.selected && (
+                  {selectedRetailer === retailer.name && (
                     <div className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                       SELECTED
                     </div>
@@ -1475,10 +1478,20 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
               <div className="flex gap-3">
                 <button
                   onClick={() => {
-                    if (selectedRetailer && selectedRetailer !== 'Ace Hardware') {
-                      // Handle retailer change
-                      onEdit();
-                      setShowPriceComparison(false);
+                    // Apply the selected retailer's price
+                    if (selectedRetailer) {
+                      const selected = retailers.find(r => r.name === selectedRetailer);
+                      if (selected && selected.price !== item.unitPrice) {
+                        // Would typically update the item here
+                        // For now, just close the modal
+                        setShowPriceComparison(false);
+                        // If price changed, could trigger edit
+                        if (currentPrice !== item.unitPrice) {
+                          onEdit();
+                        }
+                      } else {
+                        setShowPriceComparison(false);
+                      }
                     }
                   }}
                   className="flex-1 bg-gray-900 hover:bg-gray-800 text-white py-2.5 rounded-lg text-sm font-medium transition-colors"
@@ -1498,10 +1511,16 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <div className="text-xs font-medium text-emerald-900">
-                      Optimal pricing selected
+                      {selectedRetailer === 'Ace Hardware' ? 'Optimal pricing selected' : `Selected: ${selectedRetailer}`}
                     </div>
                     <div className="text-xs text-emerald-700 mt-0.5">
-                      Saving ${((retailers[1].price - item.unitPrice) * (item.qty || 1)).toFixed(2)} vs. average market price
+                      {(() => {
+                        const avgPrice = retailers.reduce((sum, r) => sum + r.price, 0) / retailers.length;
+                        const savings = (avgPrice - currentPrice) * (item.qty || 1);
+                        return savings > 0
+                          ? `Saving $${savings.toFixed(2)} vs. average market price`
+                          : `$${Math.abs(savings).toFixed(2)} above average market price`;
+                      })()}
                     </div>
                   </div>
                 </div>

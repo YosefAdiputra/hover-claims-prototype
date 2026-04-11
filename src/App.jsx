@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Search, ChevronRight, ChevronDown, Camera, Box, Ruler, FileText,
   CheckCircle2, AlertTriangle, Sparkles, ArrowRight, ArrowLeft,
@@ -1286,12 +1286,22 @@ function EmptyEvidence({ message }) {
 function DetailPanel({ item, onApprove, onEdit, onResolve }) {
   const [showPriceComparison, setShowPriceComparison] = useState(false);
   const [selectedRetailer, setSelectedRetailer] = useState('Ace Hardware');
-  const [currentPrice, setCurrentPrice] = useState(item.unitPrice);
+  const [priceOverride, setPriceOverride] = useState(null);
+
+  // Use priceOverride if set, otherwise use item's original price
+  const currentPrice = priceOverride !== null ? priceOverride : item.unitPrice;
+
   const band = confBand(item.confidence);
   const colors = CONFIDENCE_COLORS[band];
   const isException = item.status === 'needs_review';
   const isApproved = item.status === 'approved';
   const lineTotal = item.qty != null ? item.qty * currentPrice : null;
+
+  // Reset price override when item changes
+  React.useEffect(() => {
+    setPriceOverride(null);
+    setSelectedRetailer('Ace Hardware');
+  }, [item.id]);
 
   // Price comparison data for retailers
   const retailers = [
@@ -1413,7 +1423,7 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
                   `}
                   onClick={() => {
                     setSelectedRetailer(retailer.name);
-                    setCurrentPrice(retailer.price);
+                    setPriceOverride(retailer.price);
                   }}
                 >
                   {selectedRetailer === retailer.name && (

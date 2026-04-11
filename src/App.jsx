@@ -1299,7 +1299,7 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
       price: item.unitPrice,
       availability: 'In Stock',
       delivery: 'Same day',
-      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Ace_Hardware_Logo.svg/320px-Ace_Hardware_Logo.svg.png',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Ace_Hardware_Logo.svg/3840px-Ace_Hardware_Logo.svg.png',
       color: 'red',
       selected: true
     },
@@ -1308,7 +1308,7 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
       price: item.unitPrice * 1.08,
       availability: 'In Stock',
       delivery: '3-5 days',
-      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/TheHomeDepot.svg/320px-TheHomeDepot.svg.png',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/TheHomeDepot.svg/1920px-TheHomeDepot.svg.png',
       color: 'orange'
     },
     {
@@ -1316,7 +1316,7 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
       price: item.unitPrice * 1.12,
       availability: 'In Stock',
       delivery: '2-4 days',
-      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Lowes_logo_new.svg/320px-Lowes_logo_new.svg.png',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Lowes_Companies_Logo.svg/3840px-Lowes_Companies_Logo.svg.png',
       color: 'blue'
     },
     {
@@ -1324,7 +1324,7 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
       price: item.unitPrice * 1.15,
       availability: 'Limited',
       delivery: '5-7 days',
-      logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/1/14/Tractor_Supply_Company_logo.svg/320px-Tractor_Supply_Company_logo.svg.png',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/TractorSupplyCompanylogo.svg/3840px-TractorSupplyCompanylogo.svg.png',
       color: 'gray'
     }
   ].sort((a, b) => a.price - b.price);

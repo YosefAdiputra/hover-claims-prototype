@@ -317,12 +317,27 @@ function TopNav({ screen }) {
     <header className="sticky top-0 z-30 bg-white border-b border-gray-100">
       <div className="flex items-center justify-between px-4 md:px-8 h-16">
         <div className="flex items-center gap-4 md:gap-8">
-          {/* Hover Logo - cleaner, more like real Hover */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 md:w-8 md:h-8 bg-black rounded-lg flex items-center justify-center">
-              <Hexagon className="w-4 h-4 md:w-5 md:h-5 text-white" strokeWidth={2} />
-            </div>
-            <div className="text-lg md:text-xl font-bold text-gray-900 tracking-tight">Hover</div>
+          {/* Hover Logo - official branding */}
+          <div className="flex items-center gap-3">
+            <img
+              src="https://23226235.fs1.hubspotusercontent-na1.net/hubfs/23226235/web/images/branding/hover.to-social-image.jpg"
+              alt="Hover"
+              className="h-8 md:h-9 w-auto object-contain"
+              onError={(e) => {
+                // Fallback to text + icon if image fails
+                e.target.style.display = 'none';
+                e.target.parentElement.innerHTML = `
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 md:w-8 md:h-8 bg-black rounded-lg flex items-center justify-center">
+                      <svg class="w-4 h-4 md:w-5 md:h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 2 7 2 17 12 22 22 17 22 7 12 2"></polygon>
+                      </svg>
+                    </div>
+                    <div class="text-lg md:text-xl font-bold text-gray-900 tracking-tight">Hover</div>
+                  </div>
+                `;
+              }}
+            />
           </div>
 
           {/* Navigation menu - simplified like real Hover */}

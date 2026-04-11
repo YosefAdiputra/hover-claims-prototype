@@ -735,7 +735,7 @@ function Summary({ onBack, onReview, totals }) {
               <div className="text-[48px] font-semibold text-[#1D1D1F] leading-none tracking-tight mb-3">{fmt(totals.total)}</div>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 rounded-full text-blue-600 font-medium text-[13px] mb-2">
                 <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
-                94% Match
+                94% Confident
               </div>
               <div className="text-[14px] text-[#86868B]">{totals.count} line items • {totals.needsReview > 0 ? `${totals.needsReview} need review` : 'All items verified'}</div>
             </div>

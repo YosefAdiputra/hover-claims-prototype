@@ -322,7 +322,7 @@ function TopNav({ screen }) {
             <img
               src="https://23226235.fs1.hubspotusercontent-na1.net/hubfs/23226235/web/images/branding/hover.to-social-image.jpg"
               alt="Hover"
-              className="h-8 md:h-9 w-auto object-contain"
+              className="h-10 md:h-12 w-auto object-contain"
               onError={(e) => {
                 // Fallback to text + icon if image fails
                 e.target.style.display = 'none';
@@ -333,7 +333,7 @@ function TopNav({ screen }) {
                         <polygon points="12 2 2 7 2 17 12 22 22 17 22 7 12 2"></polygon>
                       </svg>
                     </div>
-                    <div class="text-lg md:text-xl font-bold text-gray-900 tracking-tight">Hover</div>
+                    <div class="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">Hover</div>
                   </div>
                 `;
               }}

@@ -4,7 +4,7 @@ import {
   CheckCircle2, AlertTriangle, Sparkles, ArrowRight, ArrowLeft,
   Edit3, Check, X, Shield, Home, Layers, MapPin, Calendar, User,
   Zap, Eye, MoreHorizontal, Send, Clock, FileCheck, Maximize2, Info,
-  Hexagon, Activity, TrendingUp, Building2, CloudHail, Wind, Droplets
+  Hexagon, Activity, TrendingUp, TrendingDown, Building2, CloudHail, Wind, Droplets
 } from 'lucide-react';
 
 // ============ MOCK DATA ============
@@ -825,14 +825,46 @@ function DataRow({ label, value, mono, highlight, amber }) {
 // ============ REVIEW SCREEN (CORE) ============
 function ReviewScreen({ lineItems, selectedItem, setSelectedItemId, onApprove, onEdit, onResolve, onContinue, onBack, evidenceTab, setEvidenceTab, setExpandedPhoto, totals }) {
   const [mobileTab, setMobileTab] = useState('items');
+  const [filter, setFilter] = useState('all'); // all, needs_review, low_confidence, resolved
+  const [sortBy, setSortBy] = useState('category'); // category, confidence, status, price
+
+  const filteredAndSorted = useMemo(() => {
+    let items = [...lineItems];
+
+    // Apply filters
+    if (filter === 'needs_review') {
+      items = items.filter(i => i.status === 'needs_review');
+    } else if (filter === 'low_confidence') {
+      items = items.filter(i => i.confidence && i.confidence < 80);
+    } else if (filter === 'resolved') {
+      items = items.filter(i => i.status === 'approved');
+    }
+
+    // Apply sorting
+    items.sort((a, b) => {
+      if (sortBy === 'confidence') {
+        return (b.confidence || 0) - (a.confidence || 0);
+      } else if (sortBy === 'status') {
+        const statusOrder = { 'needs_review': 0, 'manual': 1, 'approved': 2, 'rejected': 3 };
+        return (statusOrder[a.status] || 4) - (statusOrder[b.status] || 4);
+      } else if (sortBy === 'price') {
+        return (b.total || 0) - (a.total || 0);
+      }
+      // Default: category
+      return a.category.localeCompare(b.category);
+    });
+
+    return items;
+  }, [lineItems, filter, sortBy]);
+
   const grouped = useMemo(() => {
     const g = {};
-    lineItems.forEach(i => {
+    filteredAndSorted.forEach(i => {
       if (!g[i.category]) g[i.category] = [];
       g[i.category].push(i);
     });
     return g;
-  }, [lineItems]);
+  }, [filteredAndSorted]);
 
   return (
     <div className="min-h-[calc(100vh-56px)] md:h-[calc(100vh-56px)] flex flex-col">
@@ -923,7 +955,53 @@ function ReviewScreen({ lineItems, selectedItem, setSelectedItemId, onApprove, o
         {/* LEFT: Line items */}
         <div className={`md:border-r border-stone-200 bg-white md:overflow-y-auto ${mobileTab !== 'items' ? 'hidden md:block' : 'overflow-y-auto h-full'}`}>
           <div className="p-4 border-b border-stone-100 sticky top-0 bg-white z-10">
-            <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Scope Line Items</div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Scope Line Items</div>
+              <div className="text-[10px] text-stone-400 tabular">{filteredAndSorted.length} of {lineItems.length}</div>
+            </div>
+
+            {/* Filter pills */}
+            <div className="flex gap-1.5 mb-3 overflow-x-auto scrollbar-hide">
+              {[
+                { id: 'all', label: 'All', count: lineItems.length },
+                { id: 'needs_review', label: 'Review', count: lineItems.filter(i => i.status === 'needs_review').length },
+                { id: 'low_confidence', label: 'Low Conf', count: lineItems.filter(i => i.confidence && i.confidence < 80).length },
+                { id: 'resolved', label: 'Resolved', count: lineItems.filter(i => i.status === 'approved').length }
+              ].map(filterOption => (
+                <button
+                  key={filterOption.id}
+                  onClick={() => setFilter(filterOption.id)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[10px] font-medium transition-all ${
+                    filter === filterOption.id
+                      ? filterOption.id === 'needs_review'
+                        ? 'bg-amber-500 text-white shadow-sm'
+                        : filterOption.id === 'low_confidence'
+                        ? 'bg-red-500 text-white shadow-sm'
+                        : filterOption.id === 'resolved'
+                        ? 'bg-emerald-500 text-white shadow-sm'
+                        : 'bg-stone-800 text-white shadow-sm'
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  }`}
+                >
+                  {filterOption.label} {filterOption.count > 0 && `(${filterOption.count})`}
+                </button>
+              ))}
+            </div>
+
+            {/* Sort dropdown */}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-stone-500 font-medium">Sort by:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="text-[10px] bg-white border border-stone-200 rounded px-2 py-1 text-stone-700 focus:outline-none focus:ring-1 focus:ring-stone-400"
+              >
+                <option value="category">Category</option>
+                <option value="confidence">Confidence</option>
+                <option value="status">Status</option>
+                <option value="price">Price</option>
+              </select>
+            </div>
           </div>
           {Object.entries(grouped).map(([category, items]) => (
             <div key={category}>
@@ -1010,27 +1088,54 @@ function LineItemRow({ item, selected, onSelect }) {
             {isApproved && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />}
           </div>
           <div className="flex items-center justify-between mt-1.5">
-            <div className="text-[11px] text-stone-500 tabular">
-              {item.qty != null ? (
-                <>{item.qty} {item.unit} · <span className="font-mono-ui">{item.code}</span></>
-              ) : (
-                <span className="text-amber-700 font-medium">Qty pending</span>
+            <div className="flex items-center gap-2">
+              <div className="text-[11px] text-stone-500 tabular">
+                {item.qty != null ? (
+                  <>{item.qty} {item.unit} · <span className="font-mono-ui">{item.code}</span></>
+                ) : (
+                  <span className="text-amber-700 font-medium">Qty pending</span>
+                )}
+              </div>
+              {/* Confidence indicator */}
+              {item.confidence && (
+                <div className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                  item.confidence >= 90 ? 'text-emerald-700 bg-emerald-50' :
+                  item.confidence >= 80 ? 'text-blue-700 bg-blue-50' :
+                  item.confidence >= 70 ? 'text-amber-700 bg-amber-50' :
+                  'text-red-700 bg-red-50'
+                }`}>
+                  {item.confidence}%
+                </div>
               )}
             </div>
             <div className="text-[12px] text-stone-900 font-medium tabular">
               {item.qty != null ? fmt(item.qty * item.unitPrice) : '—'}
             </div>
           </div>
-          {isException && (
-            <div className="mt-2 flex items-center gap-1 text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 w-fit">
-              <AlertTriangle className="w-2.5 h-2.5" /> Needs review
-            </div>
-          )}
-          {item.edited && (
-            <div className="mt-2 flex items-center gap-1 text-[10px] text-stone-600 bg-stone-100 rounded px-1.5 py-0.5 w-fit">
-              <Edit3 className="w-2.5 h-2.5" /> Edited
-            </div>
-          )}
+
+          {/* Status indicators */}
+          <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+            {isException && (
+              <div className="flex items-center gap-1 text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+                <AlertTriangle className="w-2.5 h-2.5" /> Needs review
+              </div>
+            )}
+            {item.edited && (
+              <div className="flex items-center gap-1 text-[10px] text-stone-600 bg-stone-100 rounded px-1.5 py-0.5">
+                <Edit3 className="w-2.5 h-2.5" /> Edited
+              </div>
+            )}
+            {item.confidence && item.confidence < 80 && !isException && (
+              <div className="flex items-center gap-1 text-[10px] text-red-700 bg-red-50 border border-red-200 rounded px-1.5 py-0.5">
+                <TrendingDown className="w-2.5 h-2.5" /> Low confidence
+              </div>
+            )}
+            {isApproved && (
+              <div className="flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5">
+                <CheckCircle2 className="w-2.5 h-2.5" /> Resolved
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </button>
@@ -1628,9 +1733,47 @@ function EditDrawer({ item, onClose, onSave }) {
   const [unitPrice, setUnitPrice] = useState(item.unitPrice);
   const [reason, setReason] = useState('adjuster_judgment');
   const [note, setNote] = useState('');
+  const [showPriceComparison, setShowPriceComparison] = useState(false);
+
   const newTotal = qty * unitPrice;
   const origTotal = (item.qty ?? 0) * item.unitPrice;
   const delta = newTotal - origTotal;
+
+  // Retailer price data (matches original DetailPanel component)
+  const retailers = [
+    {
+      name: 'Ace Hardware',
+      price: item.unitPrice,
+      availability: 'In Stock',
+      delivery: 'Same day',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Ace_Hardware_Logo.svg/3840px-Ace_Hardware_Logo.svg.png',
+      color: 'red'
+    },
+    {
+      name: 'Home Depot',
+      price: item.unitPrice * 1.08,
+      availability: 'In Stock',
+      delivery: '3-5 days',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/TheHomeDepot.svg/1920px-TheHomeDepot.svg.png',
+      color: 'orange'
+    },
+    {
+      name: 'Lowe\'s',
+      price: item.unitPrice * 1.12,
+      availability: 'In Stock',
+      delivery: '2-4 days',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Lowes_Companies_Logo.svg/3840px-Lowes_Companies_Logo.svg.png',
+      color: 'blue'
+    },
+    {
+      name: 'Tractor Supply',
+      price: item.unitPrice * 1.15,
+      availability: 'Limited',
+      delivery: '5-7 days',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/TractorSupplyCompanylogo.svg/3840px-TractorSupplyCompanylogo.svg.png',
+      color: 'gray'
+    }
+  ];
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -1669,7 +1812,15 @@ function EditDrawer({ item, onClose, onSave }) {
               )}
             </div>
             <div>
-              <label className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Unit price</label>
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Unit price</label>
+                <button
+                  onClick={() => setShowPriceComparison(true)}
+                  className="text-[10px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                >
+                  Compare retailers <Eye className="w-3 h-3" />
+                </button>
+              </div>
               <input
                 type="number"
                 step="0.01"
@@ -1736,6 +1887,67 @@ function EditDrawer({ item, onClose, onSave }) {
           </button>
         </div>
       </div>
+
+      {/* Price Comparison Modal */}
+      {showPriceComparison && (
+        <div className="fixed inset-0 z-[60] bg-stone-900/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowPriceComparison(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-stone-100">
+              <div className="flex items-center justify-between">
+                <h3 className="text-[14px] font-semibold text-stone-900">Compare Retailer Prices</h3>
+                <button
+                  onClick={() => setShowPriceComparison(false)}
+                  className="text-stone-400 hover:text-stone-600"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-[12px] text-stone-500 mt-1">Select a retailer to update unit price</p>
+            </div>
+
+            <div className="p-4 space-y-2 max-h-80 overflow-y-auto">
+              {retailers.map((retailer, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setUnitPrice(retailer.price);
+                    setShowPriceComparison(false);
+                  }}
+                  className="w-full flex items-center justify-between p-3 rounded-xl border border-stone-200 hover:border-stone-300 hover:bg-stone-50 transition-all group"
+                >
+                  <div className="flex items-center gap-3">
+                    {retailer.logo ? (
+                      <img
+                        src={retailer.logo}
+                        alt={retailer.name}
+                        className="w-8 h-8 object-contain"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-stone-100 rounded-lg flex items-center justify-center">
+                        <Building2 className="w-4 h-4 text-stone-500" />
+                      </div>
+                    )}
+                    <div style={{ display: retailer.logo ? 'none' : 'flex' }} className="w-8 h-8 bg-stone-100 rounded-lg items-center justify-center">
+                      <Building2 className="w-4 h-4 text-stone-500" />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-[13px] font-medium text-stone-900">{retailer.name}</div>
+                      <div className="text-[10px] text-stone-500">{retailer.availability} • {retailer.delivery}</div>
+                    </div>
+                  </div>
+                  <div className="text-[14px] font-semibold text-stone-900 tabular group-hover:text-blue-600 transition-colors">
+                    {fmtDetail(retailer.price)}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -216,6 +216,19 @@ export default function HoverClaimsPrototype() {
                             linear-gradient(90deg, rgba(156,163,175,0.1) 1px, transparent 1px);
           background-size: 24px 24px;
         }
+        @keyframes slideUp {
+          from {
+            transform: translateY(20px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        .animate-slideUp {
+          animation: slideUp 0.3s ease-out;
+        }
       `}</style>
 
       <TopNav screen={screen} setScreen={setScreen} totals={totals} />
@@ -1261,11 +1274,50 @@ function EmptyEvidence({ message }) {
 
 // ============ DETAIL PANEL (RIGHT) ============
 function DetailPanel({ item, onApprove, onEdit, onResolve }) {
+  const [showPriceComparison, setShowPriceComparison] = useState(false);
+  const [selectedRetailer, setSelectedRetailer] = useState(null);
   const band = confBand(item.confidence);
   const colors = CONFIDENCE_COLORS[band];
   const isException = item.status === 'needs_review';
   const isApproved = item.status === 'approved';
   const lineTotal = item.qty != null ? item.qty * item.unitPrice : null;
+
+  // Price comparison data for retailers
+  const retailers = [
+    {
+      name: 'Home Depot',
+      price: item.unitPrice * 1.08,
+      availability: 'In Stock',
+      delivery: '3-5 days',
+      logo: '🟠',
+      color: 'orange'
+    },
+    {
+      name: 'Lowe\'s',
+      price: item.unitPrice * 1.12,
+      availability: 'In Stock',
+      delivery: '2-4 days',
+      logo: '🔵',
+      color: 'blue'
+    },
+    {
+      name: 'Local Supply Co.',
+      price: item.unitPrice,
+      availability: 'In Stock',
+      delivery: 'Same day',
+      logo: '🏪',
+      color: 'green',
+      selected: true
+    },
+    {
+      name: 'BuilderMax Pro',
+      price: item.unitPrice * 1.15,
+      availability: 'Limited',
+      delivery: '5-7 days',
+      logo: '🏗️',
+      color: 'gray'
+    }
+  ].sort((a, b) => a.price - b.price);
 
   return (
     <div className="p-6">
@@ -1299,10 +1351,147 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
         <div className="space-y-2 text-[12px]">
           <div className="flex justify-between"><span className="text-stone-500">Code</span><span className="font-mono-ui text-stone-900">{item.code}</span></div>
           <div className="flex justify-between"><span className="text-stone-500">Quantity</span><span className="text-stone-900 font-medium tabular">{item.qty != null ? `${item.qty} ${item.unit}` : '—'}</span></div>
-          <div className="flex justify-between"><span className="text-stone-500">Unit price</span><span className="text-stone-900 tabular">{fmtDetail(item.unitPrice)}</span></div>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-1.5">
+              <span className="text-stone-500">Unit price</span>
+              <button
+                onClick={() => setShowPriceComparison(!showPriceComparison)}
+                className="group relative w-4 h-4 rounded-full bg-stone-100 hover:bg-stone-200 transition-colors flex items-center justify-center"
+                aria-label="View price comparison"
+              >
+                <Info className="w-2.5 h-2.5 text-stone-500 group-hover:text-stone-700" />
+              </button>
+            </div>
+            <span className="text-stone-900 tabular">{fmtDetail(item.unitPrice)}</span>
+          </div>
           <div className="flex justify-between pt-2 border-t border-stone-100"><span className="text-stone-500">Line total</span><span className="text-stone-900 font-semibold tabular">{lineTotal != null ? fmt(lineTotal) : '—'}</span></div>
         </div>
       </div>
+
+      {/* Price Comparison Modal */}
+      {showPriceComparison && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowPriceComparison(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full animate-slideUp">
+            {/* Header */}
+            <div className="px-6 pt-6 pb-4 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Price Comparison</h3>
+                  <p className="text-sm text-gray-500 mt-1">{item.description}</p>
+                </div>
+                <button
+                  onClick={() => setShowPriceComparison(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-500" />
+                </button>
+              </div>
+            </div>
+
+            {/* Retailer List */}
+            <div className="p-6 space-y-3">
+              {retailers.map((retailer, idx) => (
+                <div
+                  key={retailer.name}
+                  className={`
+                    relative p-4 rounded-xl border-2 transition-all cursor-pointer
+                    ${retailer.selected
+                      ? 'border-emerald-500 bg-emerald-50/50'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }
+                  `}
+                  onClick={() => setSelectedRetailer(retailer.name)}
+                >
+                  {retailer.selected && (
+                    <div className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      SELECTED
+                    </div>
+                  )}
+
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      {/* Logo */}
+                      <div className={`
+                        w-10 h-10 rounded-lg flex items-center justify-center text-lg
+                        ${retailer.color === 'orange' ? 'bg-orange-100' : ''}
+                        ${retailer.color === 'blue' ? 'bg-blue-100' : ''}
+                        ${retailer.color === 'green' ? 'bg-emerald-100' : ''}
+                        ${retailer.color === 'gray' ? 'bg-gray-100' : ''}
+                      `}>
+                        {retailer.logo}
+                      </div>
+
+                      <div>
+                        <div className="font-medium text-gray-900">{retailer.name}</div>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-xs text-gray-500">{retailer.availability}</span>
+                          <span className="text-xs text-gray-400">•</span>
+                          <span className="text-xs text-gray-500">{retailer.delivery}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="font-bold text-gray-900 tabular">
+                        {fmtDetail(retailer.price)}
+                      </div>
+                      {idx === 0 && (
+                        <div className="text-xs text-emerald-600 font-medium mt-0.5">
+                          Best Price
+                        </div>
+                      )}
+                      {retailer.price > item.unitPrice && (
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          +{Math.round((retailer.price - item.unitPrice) / item.unitPrice * 100)}%
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer Actions */}
+            <div className="px-6 pb-6">
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    if (selectedRetailer && selectedRetailer !== 'Local Supply Co.') {
+                      // Handle retailer change
+                      onEdit();
+                      setShowPriceComparison(false);
+                    }
+                  }}
+                  className="flex-1 bg-gray-900 hover:bg-gray-800 text-white py-2.5 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Change Supplier
+                </button>
+                <button
+                  onClick={() => setShowPriceComparison(false)}
+                  className="flex-1 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Keep Current
+                </button>
+              </div>
+
+              <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs font-medium text-emerald-900">
+                      Optimal pricing selected
+                    </div>
+                    <div className="text-xs text-emerald-700 mt-0.5">
+                      Saving ${((retailers[1].price - item.unitPrice) * (item.qty || 1)).toFixed(2)} vs. average market price
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Why this recommendation */}
       <div className="mb-5">

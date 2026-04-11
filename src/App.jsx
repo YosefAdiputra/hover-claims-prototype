@@ -800,7 +800,7 @@ function ReviewScreen({ lineItems, selectedItem, setSelectedItemId, onApprove, o
   }, [lineItems]);
 
   return (
-    <div className="h-[calc(100vh-56px)] flex flex-col">
+    <div className="min-h-[calc(100vh-56px)] md:h-[calc(100vh-56px)] flex flex-col">
       {/* Sub header */}
       <div className="border-b border-stone-200 bg-white px-4 md:px-6 py-3 flex-shrink-0">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -884,9 +884,9 @@ function ReviewScreen({ lineItems, selectedItem, setSelectedItemId, onApprove, o
       </div>
 
       {/* Three column layout - desktop / Mobile stacked layout */}
-      <div className="flex-1 md:grid md:grid-cols-[320px_1fr_320px] lg:grid-cols-[360px_1fr_360px] overflow-hidden">
+      <div className="flex-1 md:grid md:grid-cols-[320px_1fr_320px] lg:grid-cols-[360px_1fr_360px] md:overflow-hidden min-h-0">
         {/* LEFT: Line items */}
-        <div className={`md:border-r border-stone-200 bg-white overflow-y-auto ${mobileTab !== 'items' ? 'hidden md:block' : ''}`}>
+        <div className={`md:border-r border-stone-200 bg-white md:overflow-y-auto ${mobileTab !== 'items' ? 'hidden md:block' : 'overflow-y-auto h-full'}`}>
           <div className="p-4 border-b border-stone-100 sticky top-0 bg-white z-10">
             <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Scope Line Items</div>
           </div>
@@ -909,7 +909,7 @@ function ReviewScreen({ lineItems, selectedItem, setSelectedItemId, onApprove, o
         </div>
 
         {/* CENTER: Evidence */}
-        <div className={`bg-stone-50 overflow-y-auto ${mobileTab !== 'evidence' ? 'hidden md:block' : ''}`}>
+        <div className={`bg-stone-50 md:overflow-y-auto ${mobileTab !== 'evidence' ? 'hidden md:block' : 'overflow-y-auto h-full'}`}>
           {selectedItem && (
             <EvidencePanel
               item={selectedItem}
@@ -921,7 +921,7 @@ function ReviewScreen({ lineItems, selectedItem, setSelectedItemId, onApprove, o
         </div>
 
         {/* RIGHT: Confidence + actions */}
-        <div className={`md:border-l border-stone-200 bg-white overflow-y-auto ${mobileTab !== 'ai' ? 'hidden md:block' : ''}`}>
+        <div className={`md:border-l border-stone-200 bg-white md:overflow-y-auto ${mobileTab !== 'ai' ? 'hidden md:block' : 'overflow-y-auto h-full'}`}>
           {selectedItem && (
             <DetailPanel
               item={selectedItem}
@@ -1066,12 +1066,12 @@ function PhotosView({ item, onExpand }) {
 function PhotoCard({ label, index, onClick }) {
   // Insurance adjuster hail damage inspection photo
   const realisticPhotos = [
-    'https://media.istockphoto.com/id/488913912/photo/insurance-adjuster-marked-roof-with-hail-damage.jpg?s=612x612&w=0&k=20&c=5XvO8YpE7b_0rCUKK_8Fm0w7n-XN2S8yI5dBhB7T3vA=', // Insurance adjuster marking hail damage
-    'https://media.istockphoto.com/id/488913912/photo/insurance-adjuster-marked-roof-with-hail-damage.jpg?s=612x612&w=0&k=20&c=5XvO8YpE7b_0rCUKK_8Fm0w7n-XN2S8yI5dBhB7T3vA=', // Same image - different angle view
-    'https://media.istockphoto.com/id/488913912/photo/insurance-adjuster-marked-roof-with-hail-damage.jpg?s=612x612&w=0&k=20&c=5XvO8YpE7b_0rCUKK_8Fm0w7n-XN2S8yI5dBhB7T3vA=', // Same image - close-up view
-    'https://media.istockphoto.com/id/488913912/photo/insurance-adjuster-marked-roof-with-hail-damage.jpg?s=612x612&w=0&k=20&c=5XvO8YpE7b_0rCUKK_8Fm0w7n-XN2S8yI5dBhB7T3vA=', // Same image - overview
-    'https://media.istockphoto.com/id/488913912/photo/insurance-adjuster-marked-roof-with-hail-damage.jpg?s=612x612&w=0&k=20&c=5XvO8YpE7b_0rCUKK_8Fm0w7n-XN2S8yI5dBhB7T3vA=', // Same image - detail view
-    'https://media.istockphoto.com/id/488913912/photo/insurance-adjuster-marked-roof-with-hail-damage.jpg?s=612x612&w=0&k=20&c=5XvO8YpE7b_0rCUKK_8Fm0w7n-XN2S8yI5dBhB7T3vA=', // Same image - wide view
+    'https://www.istockphoto.com/photo/roof-with-hail-damage-and-markings-from-inspection-gm1331204626-414408648?searchscope=image%2Cfilm', // Insurance adjuster marking hail damage
+    'https://www.istockphoto.com/photo/roof-with-hail-damage-and-markings-from-inspection-gm1331204626-414408648?searchscope=image%2Cfilm', // Same image - different angle view
+    'https://www.istockphoto.com/photo/roof-with-hail-damage-and-markings-from-inspection-gm1331204626-414408648?searchscope=image%2Cfilm', // Same image - close-up view
+    'https://www.istockphoto.com/photo/roof-with-hail-damage-and-markings-from-inspection-gm1331204626-414408648?searchscope=image%2Cfilm', // Same image - overview
+    'https://www.istockphoto.com/photo/roof-with-hail-damage-and-markings-from-inspection-gm1331204626-414408648?searchscope=image%2Cfilm', // Same image - detail view
+    'https://www.istockphoto.com/photo/roof-with-hail-damage-and-markings-from-inspection-gm1331204626-414408648?searchscope=image%2Cfilm', // Same image - wide view
   ];
 
   const photoUrl = realisticPhotos[index % realisticPhotos.length];
@@ -1548,35 +1548,35 @@ function ApproveScreen({ totals, lineItems, attested, setAttested, onBack, onSub
   const canSubmit = attested && totals.needsReview === 0;
 
   return (
-    <main className="max-w-[1000px] mx-auto px-6 py-10">
+    <main className="max-w-[1000px] mx-auto px-4 md:px-6 py-6 md:py-10">
       <button onClick={onBack} className="flex items-center gap-1.5 text-[13px] text-stone-500 hover:text-stone-900 mb-6">
         <ArrowLeft className="w-3.5 h-3.5" /> Back to review
       </button>
 
       <div className="mb-8">
         <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium mb-2">Final Review</div>
-        <h1 className="font-display text-5xl text-stone-900 leading-tight">Ready to submit?</h1>
+        <h1 className="font-display text-4xl md:text-5xl text-stone-900 leading-tight">Ready to submit?</h1>
         <p className="text-stone-500 mt-3 text-[14px]">Review your scope and attest before sending to Xactimate.</p>
       </div>
 
       {/* Metric strip */}
-      <div className="bg-white border border-stone-200 rounded-xl p-6 mb-6">
-        <div className="grid grid-cols-4 gap-6">
+      <div className="bg-white border border-stone-200 rounded-xl p-4 md:p-6 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           <div>
             <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Total estimate</div>
-            <div className="font-display text-4xl text-stone-900 tabular mt-1">{fmt(totals.total)}</div>
+            <div className="font-display text-2xl md:text-4xl text-stone-900 tabular mt-1">{fmt(totals.total)}</div>
           </div>
           <div>
             <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Line items</div>
-            <div className="font-display text-4xl text-stone-900 tabular mt-1">{lineItems.filter(i => i.status !== 'rejected').length}</div>
+            <div className="font-display text-2xl md:text-4xl text-stone-900 tabular mt-1">{lineItems.filter(i => i.status !== 'rejected').length}</div>
           </div>
           <div>
             <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Your edits</div>
-            <div className="font-display text-4xl text-stone-900 tabular mt-1">{totals.edits}</div>
+            <div className="font-display text-2xl md:text-4xl text-stone-900 tabular mt-1">{totals.edits}</div>
           </div>
           <div>
             <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Exceptions</div>
-            <div className={`font-display text-4xl tabular mt-1 ${totals.needsReview > 0 ? 'text-amber-700' : 'text-emerald-700'}`}>
+            <div className={`font-display text-2xl md:text-4xl tabular mt-1 ${totals.needsReview > 0 ? 'text-amber-700' : 'text-emerald-700'}`}>
               {totals.needsReview === 0 ? '✓' : totals.needsReview}
             </div>
           </div>

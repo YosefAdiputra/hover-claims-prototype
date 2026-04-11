@@ -92,7 +92,7 @@ const INITIAL_LINE_ITEMS = [
 
 const DASHBOARD_CLAIMS = [
   { id: 'CLM-2026-04812', address: '4421 Oak Ridge Dr', city: 'Henderson, NV', loss: 'Hail', date: 'Apr 6', status: 'draft_ready', confidence: 94, total: 18420, clickable: true,
-    image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop' },
+    image: 'https://media.gettyimages.com/id/1244619240/photo/biz-real-nevada-homeprices-2-lv.jpg?s=1024x1024&w=gi&k=20&c=hi1RKkWKskdNTVuwXP4bPOxQdQi9eSNJRePuAcim7J4=' },
   { id: 'CLM-2026-04807', address: '892 Desert Willow Ln', city: 'Las Vegas, NV', loss: 'Wind', date: 'Apr 6', status: 'draft_ready', confidence: 91, total: 12840,
     image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=400&h=300&fit=crop' },
   { id: 'CLM-2026-04803', address: '15 Summit Ridge Ct', city: 'Reno, NV', loss: 'Hail', date: 'Apr 5', status: 'needs_review', confidence: 72, total: 24100,

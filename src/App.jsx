@@ -229,6 +229,13 @@ export default function HoverClaimsPrototype() {
         .animate-slideUp {
           animation: slideUp 0.3s ease-out;
         }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
       `}</style>
 
       <TopNav screen={screen} setScreen={setScreen} totals={totals} />
@@ -1032,18 +1039,21 @@ function EvidencePanel({ item, tab, setTab, onExpand }) {
           <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Evidence for</div>
           <div className="text-[14px] font-medium text-stone-900 mt-0.5">{item.description}</div>
         </div>
-        <div className="flex items-center gap-1">
-          {tabs.map(t => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`flex items-center gap-1.5 px-3 py-2 text-[12px] font-medium border-b-2 -mb-px transition-colors ${tab === t.id ? 'border-stone-900 text-stone-900' : 'border-transparent text-stone-500 hover:text-stone-900'}`}
-            >
-              <t.icon className="w-3.5 h-3.5" />
-              {t.label}
-              {t.count != null && <span className="text-stone-400 tabular">({t.count})</span>}
-            </button>
-          ))}
+        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0">
+          <div className="flex items-center gap-1 min-w-max">
+            {tabs.map(t => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`flex items-center gap-1.5 px-3 py-2 text-[12px] font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${tab === t.id ? 'border-stone-900 text-stone-900' : 'border-transparent text-stone-500 hover:text-stone-900'}`}
+              >
+                <t.icon className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{t.label}</span>
+                <span className="sm:hidden">{t.label.split(' ')[0]}</span>
+                {t.count != null && <span className="text-stone-400 tabular">({t.count})</span>}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

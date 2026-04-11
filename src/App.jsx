@@ -322,7 +322,7 @@ function TopNav({ screen }) {
             <img
               src="https://23226235.fs1.hubspotusercontent-na1.net/hubfs/23226235/web/images/branding/hover.to-social-image.jpg"
               alt="Hover"
-              className="h-10 md:h-12 w-auto object-contain"
+              className="h-16 md:h-18 w-auto object-contain"
               onError={(e) => {
                 // Fallback to text + icon if image fails
                 e.target.style.display = 'none';

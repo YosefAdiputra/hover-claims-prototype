@@ -1,7 +1,7 @@
 # Hover Claims — Automate the Estimate
 ## Product Requirements Document
 
-**Author:** Yosef Durr
+**Author:** Yosef Adiputra
 **Status:** Prototype / Interview exercise
 **Last updated:** April 2026
 

@@ -1548,35 +1548,35 @@ function ApproveScreen({ totals, lineItems, attested, setAttested, onBack, onSub
   const canSubmit = attested && totals.needsReview === 0;
 
   return (
-    <main className="max-w-[1000px] mx-auto px-6 py-10">
+    <main className="max-w-[1000px] mx-auto px-4 md:px-6 py-6 md:py-10">
       <button onClick={onBack} className="flex items-center gap-1.5 text-[13px] text-stone-500 hover:text-stone-900 mb-6">
         <ArrowLeft className="w-3.5 h-3.5" /> Back to review
       </button>
 
       <div className="mb-8">
         <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium mb-2">Final Review</div>
-        <h1 className="font-display text-5xl text-stone-900 leading-tight">Ready to submit?</h1>
+        <h1 className="font-display text-4xl md:text-5xl text-stone-900 leading-tight">Ready to submit?</h1>
         <p className="text-stone-500 mt-3 text-[14px]">Review your scope and attest before sending to Xactimate.</p>
       </div>
 
       {/* Metric strip */}
-      <div className="bg-white border border-stone-200 rounded-xl p-6 mb-6">
-        <div className="grid grid-cols-4 gap-6">
+      <div className="bg-white border border-stone-200 rounded-xl p-4 md:p-6 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           <div>
             <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Total estimate</div>
-            <div className="font-display text-4xl text-stone-900 tabular mt-1">{fmt(totals.total)}</div>
+            <div className="font-display text-2xl md:text-4xl text-stone-900 tabular mt-1">{fmt(totals.total)}</div>
           </div>
           <div>
             <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Line items</div>
-            <div className="font-display text-4xl text-stone-900 tabular mt-1">{lineItems.filter(i => i.status !== 'rejected').length}</div>
+            <div className="font-display text-2xl md:text-4xl text-stone-900 tabular mt-1">{lineItems.filter(i => i.status !== 'rejected').length}</div>
           </div>
           <div>
             <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Your edits</div>
-            <div className="font-display text-4xl text-stone-900 tabular mt-1">{totals.edits}</div>
+            <div className="font-display text-2xl md:text-4xl text-stone-900 tabular mt-1">{totals.edits}</div>
           </div>
           <div>
             <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Exceptions</div>
-            <div className={`font-display text-4xl tabular mt-1 ${totals.needsReview > 0 ? 'text-amber-700' : 'text-emerald-700'}`}>
+            <div className={`font-display text-2xl md:text-4xl tabular mt-1 ${totals.needsReview > 0 ? 'text-amber-700' : 'text-emerald-700'}`}>
               {totals.needsReview === 0 ? '✓' : totals.needsReview}
             </div>
           </div>

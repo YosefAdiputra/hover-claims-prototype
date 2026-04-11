@@ -1066,12 +1066,12 @@ function PhotosView({ item, onExpand }) {
 function PhotoCard({ label, index, onClick }) {
   // Insurance adjuster hail damage inspection photo
   const realisticPhotos = [
-    'https://www.istockphoto.com/photo/roof-with-hail-damage-and-markings-from-inspection-gm1331204626-414408648?searchscope=image%2Cfilm', // Insurance adjuster marking hail damage
-    'https://www.istockphoto.com/photo/roof-with-hail-damage-and-markings-from-inspection-gm1331204626-414408648?searchscope=image%2Cfilm', // Same image - different angle view
-    'https://www.istockphoto.com/photo/roof-with-hail-damage-and-markings-from-inspection-gm1331204626-414408648?searchscope=image%2Cfilm', // Same image - close-up view
-    'https://www.istockphoto.com/photo/roof-with-hail-damage-and-markings-from-inspection-gm1331204626-414408648?searchscope=image%2Cfilm', // Same image - overview
-    'https://www.istockphoto.com/photo/roof-with-hail-damage-and-markings-from-inspection-gm1331204626-414408648?searchscope=image%2Cfilm', // Same image - detail view
-    'https://www.istockphoto.com/photo/roof-with-hail-damage-and-markings-from-inspection-gm1331204626-414408648?searchscope=image%2Cfilm', // Same image - wide view
+    'https://media.istockphoto.com/id/1331204626/photo/roof-with-hail-damage-and-markings-from-inspection.jpg?s=612x612&w=0&k=20&c=gD3i8KcwFPiJf7j-H-xSxQZrxJz_vRkGzQVKqcHJ4tI=', // Insurance adjuster marking hail damage
+    'https://media.istockphoto.com/id/1331204626/photo/roof-with-hail-damage-and-markings-from-inspection.jpg?s=612x612&w=0&k=20&c=gD3i8KcwFPiJf7j-H-xSxQZrxJz_vRkGzQVKqcHJ4tI=', // Same image - different angle view
+    'https://media.istockphoto.com/id/1331204626/photo/roof-with-hail-damage-and-markings-from-inspection.jpg?s=612x612&w=0&k=20&c=gD3i8KcwFPiJf7j-H-xSxQZrxJz_vRkGzQVKqcHJ4tI=', // Same image - close-up view
+    'https://media.istockphoto.com/id/1331204626/photo/roof-with-hail-damage-and-markings-from-inspection.jpg?s=612x612&w=0&k=20&c=gD3i8KcwFPiJf7j-H-xSxQZrxJz_vRkGzQVKqcHJ4tI=', // Same image - overview
+    'https://media.istockphoto.com/id/1331204626/photo/roof-with-hail-damage-and-markings-from-inspection.jpg?s=612x612&w=0&k=20&c=gD3i8KcwFPiJf7j-H-xSxQZrxJz_vRkGzQVKqcHJ4tI=', // Same image - detail view
+    'https://media.istockphoto.com/id/1331204626/photo/roof-with-hail-damage-and-markings-from-inspection.jpg?s=612x612&w=0&k=20&c=gD3i8KcwFPiJf7j-H-xSxQZrxJz_vRkGzQVKqcHJ4tI=', // Same image - wide view
   ];
 
   const photoUrl = realisticPhotos[index % realisticPhotos.length];

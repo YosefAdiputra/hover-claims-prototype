@@ -6,6 +6,8 @@ import {
   Zap, Eye, MoreHorizontal, Send, Clock, FileCheck, Maximize2, Info,
   Hexagon, Activity, TrendingUp, TrendingDown, Building2, CloudHail, Wind, Droplets
 } from 'lucide-react';
+import House3D from './House3D';
+import House3DAdvanced from './House3DAdvanced';
 
 // ============ MOCK DATA ============
 const CLAIM = {
@@ -439,7 +441,7 @@ function Dashboard({ onOpen }) {
             <span className="text-[11px] md:text-[12px] text-gray-300">•</span>
             <span className="text-[11px] md:text-[12px] text-gray-500">Thursday, April 16, 2026</span>
           </div>
-          <h1 className="font-display text-4xl md:text-6xl text-gray-900 leading-tight tracking-tight">Good morning, Yosef.</h1>
+          <h1 className="font-display text-[2.025rem] md:text-[3.375rem] text-gray-900 leading-tight tracking-tight">Good morning, Yosef.</h1>
           <p className="text-gray-600 mt-3 md:mt-4 text-[14px] md:text-[16px] leading-relaxed">You have <span className="text-gray-900 font-semibold">6 claims</span> in your queue. 3 are ready to review with high-confidence AI drafts.</p>
         </div>
         <div className="flex items-center gap-3 mt-4 md:mt-0">
@@ -1188,7 +1190,7 @@ function EvidencePanel({ item, tab, setTab, onExpand }) {
 
       <div className="p-6">
         {tab === 'photos' && <PhotosView item={item} onExpand={onExpand} />}
-        {tab === '3d' && <ThreeDView item={item} />}
+        {tab === '3d' && <House3DAdvanced />}
         {tab === 'measurements' && <MeasurementsView item={item} />}
         {tab === 'notes' && <NotesView item={item} />}
       </div>
@@ -1286,49 +1288,302 @@ function PhotoCard({ label, index, onClick }) {
 }
 
 function ThreeDView() {
+  const [rotationY, setRotationY] = React.useState(-30);
+  const [rotationX, setRotationX] = React.useState(25);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [startPos, setStartPos] = React.useState({ x: 0, y: 0 });
+  const [hoveredDamage, setHoveredDamage] = React.useState(null);
+  const [pulseAnimation, setPulseAnimation] = React.useState(true);
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setPulseAnimation(false);
+    setStartPos({
+      x: e.clientX - rotationY,
+      y: e.clientY - rotationX
+    });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const newRotationY = e.clientX - startPos.x;
+    const newRotationX = Math.max(-45, Math.min(45, e.clientY - startPos.y));
+    setRotationY(newRotationY);
+    setRotationX(newRotationX);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  React.useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, startPos]);
+
   return (
-    <div className="bg-white rounded-lg border border-stone-200 p-8">
-      <div className="text-center mb-6">
+    <div className="bg-white rounded-lg border border-stone-200 p-6">
+      <div className="text-center mb-4">
         <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium mb-1">3D Digital Twin</div>
-        <div className="text-[13px] text-stone-900">Affected area highlighted</div>
+        <div className="text-[13px] text-stone-900">Drag to rotate • Hover damage markers for details</div>
       </div>
-      {/* Stylized isometric house SVG */}
-      <div className="flex justify-center grid-bg rounded-lg py-8">
-        <svg viewBox="0 0 400 300" className="w-full max-w-md">
+
+      {/* Futuristic Holographic 3D House */}
+      <div
+        className="relative flex justify-center rounded-2xl p-8 cursor-grab active:cursor-grabbing select-none"
+        onMouseDown={handleMouseDown}
+        style={{
+          userSelect: 'none',
+          minHeight: '450px',
+          background: 'radial-gradient(ellipse at center, #0f172a 0%, #1e293b 50%, #334155 100%)',
+          position: 'relative'
+        }}>
+
+        {/* Grid floor effect */}
+        <div className="absolute inset-0 opacity-20">
+          <svg className="w-full h-full">
+            <defs>
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#10b981" strokeWidth="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+          </svg>
+        </div>
+
+        {/* 3D Scene Container */}
+        <div className="relative z-10" style={{
+          transform: `perspective(1500px) rotateX(${rotationX}deg) rotateY(${rotationY}deg)`,
+          transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          transformStyle: 'preserve-3d',
+          width: '450px',
+          height: '350px'
+        }}>
+
+        {/* Futuristic Geometric House SVG */}
+        <svg viewBox="0 0 900 700" className="absolute inset-0 w-full h-full">
           <defs>
-            <linearGradient id="roof-north" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#ef4444" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#dc2626" stopOpacity="0.7" />
+            {/* Holographic gradients */}
+            <linearGradient id="holoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#10b981" stopOpacity="0.8"/>
+              <stop offset="33%" stopColor="#06b6d4" stopOpacity="0.6"/>
+              <stop offset="66%" stopColor="#8b5cf6" stopOpacity="0.7"/>
+              <stop offset="100%" stopColor="#ec4899" stopOpacity="0.8"/>
             </linearGradient>
-            <linearGradient id="roof-east" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#f97316" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#ea580c" stopOpacity="0.6" />
+
+            <linearGradient id="glassWall" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.1"/>
+              <stop offset="50%" stopColor="#10b981" stopOpacity="0.05"/>
+              <stop offset="100%" stopColor="#064e3b" stopOpacity="0.2"/>
             </linearGradient>
+
+            <linearGradient id="neonGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#10b981" stopOpacity="1"/>
+              <stop offset="50%" stopColor="#34d399" stopOpacity="0.8"/>
+              <stop offset="100%" stopColor="#10b981" stopOpacity="1"/>
+            </linearGradient>
+
+            {/* Damage pulse effect */}
+            <radialGradient id="damagePulse">
+              <stop offset="0%" stopColor="#ef4444" stopOpacity="0.9"/>
+              <stop offset="50%" stopColor="#f87171" stopOpacity="0.5"/>
+              <stop offset="100%" stopColor="#fca5a5" stopOpacity="0.1"/>
+            </radialGradient>
+
+            {/* Glow filter */}
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
           </defs>
-          {/* House body */}
-          <polygon points="80,200 200,240 200,140 80,100" fill="#e7e5e4" stroke="#78716c" strokeWidth="1" />
-          <polygon points="200,240 320,200 320,100 200,140" fill="#d6d3d1" stroke="#78716c" strokeWidth="1" />
-          {/* Roof north (highlighted) */}
-          <polygon points="80,100 200,140 200,70 80,30" fill="url(#roof-north)" stroke="#dc2626" strokeWidth="1.5" />
-          {/* Roof east (highlighted) */}
-          <polygon points="200,140 320,100 320,30 200,70" fill="url(#roof-east)" stroke="#ea580c" strokeWidth="1.5" />
-          {/* Ridge line */}
-          <line x1="80" y1="30" x2="320" y2="30" stroke="#78716c" strokeWidth="1" />
-          <line x1="200" y1="70" x2="200" y2="140" stroke="#78716c" strokeWidth="1" strokeDasharray="2,2" />
-          {/* Damage pins */}
-          {[[130, 70], [160, 85], [110, 55], [250, 65], [280, 80], [230, 90]].map(([x, y], i) => (
-            <g key={i}>
-              <circle cx={x} cy={y} r="4" fill="white" stroke="#dc2626" strokeWidth="2" />
-              <circle cx={x} cy={y} r="1.5" fill="#dc2626" />
+
+          {/* Floating platform */}
+          <ellipse cx="450" cy="500" rx="200" ry="40" fill="#10b981" opacity="0.1"/>
+          <ellipse cx="450" cy="500" rx="180" ry="35" fill="none" stroke="#10b981" strokeWidth="1" opacity="0.3"/>
+
+          {/* 3D House Structure - Holographic Style */}
+          <g filter="url(#glow)">
+            {/* House Foundation/Base */}
+            <path d="M 250 420 L 250 380 L 450 340 L 650 380 L 650 420 L 450 460 Z"
+                  fill="url(#glassWall)" stroke="#10b981" strokeWidth="1.5" opacity="0.4"/>
+
+            {/* Front Wall */}
+            <path d="M 250 380 L 250 280 L 450 240 L 450 340 Z"
+                  fill="url(#glassWall)" stroke="#10b981" strokeWidth="2" opacity="0.6"/>
+
+            {/* Right Wall */}
+            <path d="M 450 240 L 650 280 L 650 380 L 450 340 Z"
+                  fill="url(#glassWall)" stroke="#06b6d4" strokeWidth="2" opacity="0.5"/>
+
+            {/* Front Door */}
+            <rect x="330" y="320" width="40" height="60" fill="none" stroke="#10b981" strokeWidth="1.5" opacity="0.8"/>
+            <rect x="335" y="325" width="30" height="50" fill="url(#glassDoor)" opacity="0.6"/>
+
+            {/* Front Windows */}
+            <g opacity="0.8">
+              <rect x="270" y="300" width="35" height="35" fill="url(#glassDoor)" stroke="#10b981" strokeWidth="1"/>
+              <rect x="395" y="300" width="35" height="35" fill="url(#glassDoor)" stroke="#10b981" strokeWidth="1"/>
+            </g>
+
+            {/* Side Windows */}
+            <g opacity="0.7">
+              <path d="M 480 270 L 520 275 L 520 310 L 480 305 Z" fill="url(#glassDoor)" stroke="#06b6d4" strokeWidth="1"/>
+              <path d="M 560 280 L 600 285 L 600 320 L 560 315 Z" fill="url(#glassDoor)" stroke="#06b6d4" strokeWidth="1"/>
+            </g>
+
+            {/* Garage Door */}
+            <path d="M 520 335 L 620 350 L 620 380 L 520 365 Z"
+                  fill="none" stroke="#06b6d4" strokeWidth="1.5" opacity="0.7"/>
+            <path d="M 525 340 L 615 354 L 615 375 L 525 361 Z"
+                  fill="url(#glassWall)" opacity="0.3"/>
+
+            {/* Main Roof - Traditional pitched shape */}
+            <path d="M 230 280 L 450 180 L 670 280 L 450 240 Z"
+                  fill="url(#glassWall)" stroke="url(#holoGradient)" strokeWidth="2" opacity="0.7"/>
+
+            {/* Roof Ridge */}
+            <line x1="450" y1="180" x2="450" y2="240" stroke="#10b981" strokeWidth="2" opacity="0.8"/>
+
+            {/* Roof Side Faces */}
+            <path d="M 230 280 L 450 180 L 450 240 L 250 280 Z"
+                  fill="#10b981" opacity="0.15"/>
+            <path d="M 450 180 L 670 280 L 450 240 Z"
+                  fill="#06b6d4" opacity="0.15"/>
+
+            {/* Chimney */}
+            <g opacity="0.7">
+              <rect x="550" y="200" width="25" height="50" fill="url(#glassWall)" stroke="#8b5cf6" strokeWidth="1.5"/>
+              <rect x="548" y="195" width="29" height="8" fill="#8b5cf6" opacity="0.5"/>
+            </g>
+
+            {/* Holographic Details */}
+            <g opacity="0.6">
+              {/* Energy field lines */}
+              <line x1="250" y1="280" x2="250" y2="380" stroke="#10b981" strokeWidth="0.5">
+                <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite"/>
+              </line>
+              <line x1="450" y1="240" x2="450" y2="340" stroke="#10b981" strokeWidth="0.5">
+                <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite" begin="1s"/>
+              </line>
+              <line x1="650" y1="280" x2="650" y2="380" stroke="#06b6d4" strokeWidth="0.5">
+                <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite" begin="2s"/>
+              </line>
+            </g>
+          </g>
+
+          {/* Hail damage indicators - Positioned on roof */}
+          {[
+            {x: 340, y: 230, size: 10, severity: 'high'},
+            {x: 450, y: 210, size: 8, severity: 'high'},
+            {x: 560, y: 230, size: 9, severity: 'medium'},
+            {x: 290, y: 260, size: 7, severity: 'high'},
+            {x: 610, y: 260, size: 8, severity: 'medium'},
+            {x: 380, y: 240, size: 6, severity: 'low'},
+            {x: 520, y: 240, size: 9, severity: 'high'},
+            {x: 450, y: 190, size: 10, severity: 'high'},
+            {x: 400, y: 220, size: 7, severity: 'medium'},
+            {x: 500, y: 220, size: 8, severity: 'high'},
+          ].map((damage, i) => (
+            <g key={i}
+               className="damage-marker"
+               onMouseEnter={() => setHoveredDamage(i)}
+               onMouseLeave={() => setHoveredDamage(null)}
+               style={{ cursor: 'pointer' }}>
+              {/* Animated damage ring */}
+              <circle
+                cx={damage.x}
+                cy={damage.y}
+                r={damage.size + 5}
+                fill="none"
+                stroke={damage.severity === 'high' ? '#ef4444' : damage.severity === 'medium' ? '#f97316' : '#fbbf24'}
+                strokeWidth="1"
+                opacity={hoveredDamage === i ? 1 : 0.4}>
+                {hoveredDamage === i && (
+                  <animate attributeName="r" values={`${damage.size + 5};${damage.size + 10};${damage.size + 5}`} dur="1s" repeatCount="indefinite"/>
+                )}
+              </circle>
+
+              {/* Damage core */}
+              <circle
+                cx={damage.x}
+                cy={damage.y}
+                r={damage.size}
+                fill="url(#damagePulse)"
+                opacity={hoveredDamage === i ? 1 : 0.7}>
+                <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+              </circle>
+
+              {/* Center point */}
+              <circle
+                cx={damage.x}
+                cy={damage.y}
+                r="3"
+                fill={damage.severity === 'high' ? '#dc2626' : damage.severity === 'medium' ? '#ea580c' : '#f59e0b'}
+              />
             </g>
           ))}
-          {/* Labels */}
-          <text x="130" y="130" fontSize="9" fill="#44403c" fontFamily="Geist, sans-serif" fontWeight="500">NORTH SLOPE</text>
-          <text x="240" y="130" fontSize="9" fill="#44403c" fontFamily="Geist, sans-serif" fontWeight="500">EAST SLOPE</text>
-          {/* Measurement annotation */}
-          <line x1="80" y1="215" x2="200" y2="255" stroke="#059669" strokeWidth="1" strokeDasharray="3,2" />
-          <text x="120" y="250" fontSize="10" fill="#059669" fontWeight="600">24.5 SQ affected</text>
+
+          {/* Holographic measurements */}
+          <g opacity={hoveredDamage === null ? 1 : 0.3}>
+            {/* Connection lines */}
+            <line x1="300" y1="350" x2="280" y2="550" stroke="#10b981" strokeWidth="1" opacity="0.5"/>
+            <line x1="600" y1="350" x2="620" y2="550" stroke="#10b981" strokeWidth="1" opacity="0.5"/>
+
+            {/* Measurement displays */}
+            <g transform="translate(280, 550)">
+              <rect x="-40" y="-15" width="80" height="30" fill="#0f172a" stroke="#10b981" strokeWidth="1" rx="4" opacity="0.9"/>
+              <text x="0" y="5" fontSize="12" fill="#10b981" textAnchor="middle" fontWeight="bold">13.1 SQ</text>
+            </g>
+
+            <g transform="translate(620, 550)">
+              <rect x="-40" y="-15" width="80" height="30" fill="#0f172a" stroke="#10b981" strokeWidth="1" rx="4" opacity="0.9"/>
+              <text x="0" y="5" fontSize="12" fill="#10b981" textAnchor="middle" fontWeight="bold">11.4 SQ</text>
+            </g>
+
+            {/* Total display */}
+            <g transform="translate(450, 50)">
+              <rect x="-60" y="-20" width="120" height="40" fill="#0f172a" stroke="url(#holoGradient)" strokeWidth="2" rx="6" opacity="0.95"/>
+              <text x="0" y="-2" fontSize="10" fill="#6ee7b7" textAnchor="middle">TOTAL AFFECTED</text>
+              <text x="0" y="12" fontSize="16" fill="#10b981" textAnchor="middle" fontWeight="bold">24.5 SQ</text>
+            </g>
+          </g>
+
+          {/* Hover info panel */}
+          {hoveredDamage !== null && (
+            <g transform="translate(450, 600)">
+              <rect x="-80" y="-30" width="160" height="60" fill="#0f172a" stroke="#10b981" strokeWidth="2" rx="8" opacity="0.95"/>
+              <text x="0" y="-5" fontSize="12" fill="#10b981" textAnchor="middle" fontWeight="bold">
+                DAMAGE POINT #{hoveredDamage + 1}
+              </text>
+              <text x="0" y="15" fontSize="10" fill="#6ee7b7" textAnchor="middle">
+                Click for analysis
+              </text>
+            </g>
+          )}
         </svg>
+        </div>
+      </div>
+
+      {/* Interactive controls hint */}
+      <div className="text-center mt-3">
+        <p className="text-[10px] text-stone-400">
+          <span className="inline-flex items-center gap-1.5">
+            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 9l7-7 7 7M5 15l7 7 7-7" />
+            </svg>
+            Click and drag to rotate model • Hover damage markers for details
+          </span>
+        </p>
       </div>
       <div className="grid grid-cols-3 gap-3 mt-6">
         <div className="text-center">

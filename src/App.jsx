@@ -47,7 +47,7 @@ const INITIAL_LINE_ITEMS = [
   { id: 4, category: 'Roof', code: 'RFG IWS', description: 'Ice & water shield', qty: 320, unit: 'SF', unitPrice: 2.18, confidence: 91, status: 'pending',
     evidence: ['Eave detail — existing underlayment', '3D eave measurement'],
     explanation: 'Required at eaves per IRC code for this climate zone. Quantity based on 3 ft from eave edge across affected slope length.',
-    comparables: 15, inspectorNote: '' },
+    comparables: 15, inspectorNote: 'Existing ice & water shield appears intact but recommend replacement with new underlayment.' },
   { id: 5, category: 'Roof', code: 'RFG RIDGE', description: 'R&R Ridge cap — composition shingles', qty: 52, unit: 'LF', unitPrice: 8.96, confidence: 94, status: 'pending',
     evidence: ['Ridge line full view', 'Ridge cap damage detail'],
     explanation: 'Ridge cap replacement required with full shingle replacement. Linear footage matches 3D model ridge measurement.',
@@ -55,17 +55,17 @@ const INITIAL_LINE_ITEMS = [
   { id: 6, category: 'Roof', code: 'RFG FLASH', description: 'R&R Flashing — pipe jack', qty: 3, unit: 'EA', unitPrice: 48.30, confidence: 89, status: 'pending',
     evidence: ['Pipe jack 1 — north slope', 'Pipe jack 2 — rear', 'Pipe jack 3 — east'],
     explanation: '3 pipe jacks identified in inspection photos on affected slopes. Standard practice to replace during full re-roof.',
-    comparables: 20, inspectorNote: '' },
+    comparables: 20, inspectorNote: 'All three pipe jack flashings show impact damage and require replacement.' },
   { id: 7, category: 'Roof', code: 'RFG FELT', description: 'Roofing felt — 15 lb', qty: 24.5, unit: 'SQ', unitPrice: 34.20, confidence: 95, status: 'pending',
     evidence: ['Underlayment reference'],
     explanation: 'Felt underlayment quantity matches shingle replacement area.',
-    comparables: 22, inspectorNote: '' },
+    comparables: 22, inspectorNote: 'Existing felt underlayment exposed in damaged areas shows weathering.' },
 
   // GUTTERS
   { id: 8, category: 'Gutters', code: 'GUT 5IN', description: 'R&R Gutter — aluminum, 5"', qty: null, unit: 'LF', unitPrice: 9.85, confidence: 58, status: 'needs_review',
     evidence: ['Gutter north — possible damage', 'Gutter east — possible damage'],
     explanation: 'AI detected possible hail damage in 2 photos but could not determine extent. Inspector\'s checklist did not include gutter measurements.',
-    comparables: 8, inspectorNote: '' },
+    comparables: 8, inspectorNote: 'Gutter system pulling away from roofline with visible hail dents along north section.' },
   { id: 9, category: 'Gutters', code: 'GUT DS', description: 'R&R Downspout — aluminum', qty: 24, unit: 'LF', unitPrice: 8.40, confidence: 87, status: 'pending',
     evidence: ['Downspout north', 'Downspout east'],
     explanation: 'Two downspouts visible with dent damage consistent with hail impact.',
@@ -75,11 +75,11 @@ const INITIAL_LINE_ITEMS = [
   { id: 10, category: 'Fascia', code: 'FCA 1X6', description: 'R&R Fascia board — 1"x6"', qty: 36, unit: 'LF', unitPrice: 6.80, confidence: 74, status: 'pending',
     evidence: ['Fascia damage north', 'Fascia damage east'],
     explanation: 'Partial fascia damage identified on north eave. Quantity estimated from visible damage zone in photos; measurement not captured by inspector.',
-    comparables: 6, inspectorNote: '' },
+    comparables: 6, inspectorNote: 'Hail damage to fascia board with splintering along north eave edge.' },
   { id: 11, category: 'Fascia', code: 'PNT FCA', description: 'Paint fascia — 1 coat', qty: 36, unit: 'LF', unitPrice: 2.10, confidence: 74, status: 'pending',
     evidence: ['Fascia reference'],
     explanation: 'Paint applied to match fascia replacement quantity.',
-    comparables: 6, inspectorNote: '' },
+    comparables: 6, inspectorNote: 'Paint chipping and damage corresponds to fascia board replacement area.' },
 
   // SIDING
   { id: 12, category: 'Siding', code: 'SDG VNL', description: 'R&R Siding — vinyl, detached', qty: 48, unit: 'SF', unitPrice: 6.25, confidence: 81, status: 'pending',
@@ -89,7 +89,7 @@ const INITIAL_LINE_ITEMS = [
   { id: 13, category: 'Siding', code: 'PNT EXT', description: 'Paint exterior — spot repair', qty: 48, unit: 'SF', unitPrice: 1.85, confidence: 81, status: 'pending',
     evidence: ['Siding reference'],
     explanation: 'Spot paint matched to siding replacement area.',
-    comparables: 9, inspectorNote: '' },
+    comparables: 9, inspectorNote: 'Primer and topcoat needed to match existing siding color after panel replacement.' },
 ];
 
 const DASHBOARD_CLAIMS = [

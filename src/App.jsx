@@ -238,7 +238,7 @@ export default function HoverClaimsPrototype() {
         }
       `}</style>
 
-      <TopNav screen={screen} setScreen={setScreen} totals={totals} />
+      <TopNav screen={screen} setScreen={setScreen} totals={totals} showGame={showGame} setShowGame={setShowGame} />
 
       {screen === 'dashboard' && <Dashboard onOpen={() => setScreen('summary')} />}
       {screen === 'summary' && <Summary onBack={() => setScreen('dashboard')} onReview={() => setScreen('review')} totals={totals} />}
@@ -303,7 +303,7 @@ export default function HoverClaimsPrototype() {
 }
 
 // ============ TOP NAV ============
-function TopNav({ screen }) {
+function TopNav({ screen, showGame, setShowGame }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const crumbs = {
     dashboard: ['Claims'],
@@ -362,6 +362,15 @@ function TopNav({ screen }) {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             <MoreHorizontal className="w-5 h-5" />
+          </button>
+
+          {/* Take a Break button */}
+          <button
+            onClick={() => setShowGame(true)}
+            className="hidden md:flex items-center gap-2 px-3 py-2 text-[13px] text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors touch-manipulation"
+          >
+            <Activity className="w-4 h-4" />
+            Take a break
           </button>
 
           {/* User menu - cleaner styling */}
@@ -428,7 +437,7 @@ function Dashboard({ onOpen }) {
           <div className="flex items-center gap-2 mb-3">
             <span className="text-[11px] md:text-[12px] uppercase tracking-wider text-gray-500 font-medium">My Queue</span>
             <span className="text-[11px] md:text-[12px] text-gray-300">•</span>
-            <span className="text-[11px] md:text-[12px] text-gray-500">Wednesday, April 8, 2026</span>
+            <span className="text-[11px] md:text-[12px] text-gray-500">Thursday, April 16, 2026</span>
           </div>
           <h1 className="font-display text-4xl md:text-6xl text-gray-900 leading-tight tracking-tight">Good morning, Yosef.</h1>
           <p className="text-gray-600 mt-3 md:mt-4 text-[14px] md:text-[16px] leading-relaxed">You have <span className="text-gray-900 font-semibold">6 claims</span> in your queue. 3 are ready to review with high-confidence AI drafts.</p>
@@ -2257,134 +2266,41 @@ function SuccessPopup({ totals, onClose, onBackToQueue, onTakeBreak }) {
 
 // ============ SEVERANCE GAME ============
 function SeveranceGame({ onClose }) {
-  const [numbers, setNumbers] = useState([]);
-  const [currentQuota, setCurrentQuota] = useState(0);
-  const [gameStarted, setGameStarted] = useState(false);
-
-  // Generate numbers for the sorting game
-  const generateNumbers = () => {
-    const newNumbers = [];
-    for (let i = 0; i < 10; i++) {
-      newNumbers.push({
-        id: i,
-        value: Math.floor(Math.random() * 100).toString().padStart(2, '0'),
-        isSorted: false
-      });
-    }
-    setNumbers(newNumbers);
-  };
-
-  // Start the game
-  const startGame = () => {
-    setGameStarted(true);
-    setCurrentQuota(0);
-    generateNumbers();
-  };
-
-  // Handle number sorting
-  const sortNumber = (id) => {
-    setNumbers(prev => prev.map(num =>
-      num.id === id ? { ...num, isSorted: true } : num
-    ));
-    setCurrentQuota(prev => prev + 1);
-
-    // Replace sorted number with new one after delay
-    setTimeout(() => {
-      setNumbers(prev => prev.map(num =>
-        num.id === id ? {
-          ...num,
-          value: Math.floor(Math.random() * 100).toString().padStart(2, '0'),
-          isSorted: false
-        } : num
-      ));
-    }, 500);
-  };
-
   return (
-    <div className="fixed inset-0 bg-[#003D2F] z-50 font-mono">
-      <div className="h-full flex flex-col">
-        {/* Top Border */}
-        <div className="h-2 bg-[#00A86B]"></div>
-
-        {!gameStarted ? (
-          /* Welcome Screen */
-          <div className="flex-1 flex items-center justify-center bg-[#003D2F]">
-            <div className="text-center max-w-2xl px-8">
-              <div className="text-[#00A86B] text-6xl font-bold mb-8 tracking-wider">
-                MACRODATA REFINEMENT
-              </div>
-              <div className="text-[#00A86B] text-xl mb-8 leading-relaxed">
-                Please sort the data below according to your employee handbook.
-              </div>
-              <div className="text-[#00A86B] text-lg mb-12">
-                Remember: All numbers are beautiful and deserve care.
-              </div>
-              <button
-                onClick={startGame}
-                className="bg-[#00A86B] hover:bg-[#00B86F] text-[#003D2F] px-12 py-4 text-2xl font-bold tracking-wider transition-colors"
-              >
-                BEGIN
-              </button>
-              <div className="mt-8">
-                <button
-                  onClick={onClose}
-                  className="text-[#00A86B] hover:text-[#00B86F] text-lg underline transition-colors"
-                >
-                  EXIT TO WORK
-                </button>
-              </div>
-            </div>
+    <div className="fixed inset-0 bg-stone-900/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-stone-900">Macrodata Refinement</h2>
+            <p className="text-sm text-stone-500 mt-1">Take a break with the Lumon Industries experience</p>
           </div>
-        ) : (
-          /* Game Screen */
-          <div className="flex-1 bg-[#003D2F] p-8">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-8">
-              <div className="text-[#00A86B] text-2xl font-bold">
-                MDR - QUOTA: {currentQuota}
-              </div>
-              <button
-                onClick={onClose}
-                className="text-[#00A86B] hover:text-[#00B86F] text-lg underline transition-colors"
-              >
-                EXIT TO WORK
-              </button>
-            </div>
+          <button
+            onClick={onClose}
+            className="text-stone-400 hover:text-stone-600 p-2 rounded-lg hover:bg-stone-100 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-            {/* Instructions */}
-            <div className="text-[#00A86B] text-xl mb-8 text-center">
-              Select the data below to sort it into the appropriate file.
-            </div>
+        {/* Game Content */}
+        <div className="flex-1 p-6 flex items-center justify-center">
+          <iframe
+            style={{ border: "1px solid rgba(0, 0, 0, 0.1)", borderRadius: "12px" }}
+            width="100%"
+            height="100%"
+            src="https://embed.figma.com/proto/dDHIgVJBZEVDMk7E7j6Mqf/Severance-Macrodata-Refinement-Game--Community-?node-id=8-142&scaling=scale-down&content-scaling=fixed&page-id=9%3A667&starting-point-node-id=8%3A142&embed-host=share"
+            allowFullScreen
+            title="Severance Macrodata Refinement Game"
+          />
+        </div>
 
-            {/* Data Grid */}
-            <div className="max-w-4xl mx-auto">
-              <div className="grid grid-cols-5 gap-6 mb-12">
-                {numbers.map(num => (
-                  <button
-                    key={num.id}
-                    onClick={() => !num.isSorted && sortNumber(num.id)}
-                    className={`aspect-square border-2 text-4xl font-bold transition-all duration-300 ${
-                      num.isSorted
-                        ? 'border-[#00A86B] bg-[#00A86B] text-[#003D2F] scale-95 opacity-50'
-                        : 'border-[#00A86B] text-[#00A86B] hover:bg-[#00A86B] hover:text-[#003D2F] hover:scale-105'
-                    }`}
-                    disabled={num.isSorted}
-                  >
-                    {num.value}
-                  </button>
-                ))}
-              </div>
-
-              {/* Bottom Text */}
-              <div className="text-[#00A86B] text-lg text-center">
-                Thank you for your service to Lumon Industries.
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Bottom Border */}
-        <div className="h-2 bg-[#00A86B]"></div>
+        {/* Footer */}
+        <div className="px-6 py-3 border-t border-stone-200 bg-stone-50 rounded-b-2xl">
+          <p className="text-xs text-stone-500 text-center">
+            Remember: Work-life balance is important. Enjoy your break from refining insurance claims data.
+          </p>
+        </div>
       </div>
     </div>
   );

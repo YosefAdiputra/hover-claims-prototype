@@ -1438,7 +1438,8 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
       name: 'Ace Hardware',
       price: item.unitPrice,
       availability: 'In Stock',
-      delivery: 'Same day',
+      delivery: 'Same day delivery',
+      sku: 'ACE-4821739',
       logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Ace_Hardware_Logo.svg/3840px-Ace_Hardware_Logo.svg.png',
       color: 'red'
     },
@@ -1446,7 +1447,8 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
       name: 'Home Depot',
       price: item.unitPrice * 1.08,
       availability: 'In Stock',
-      delivery: '3-5 days',
+      delivery: '3-5 day delivery',
+      sku: 'HD-1000692847',
       logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/TheHomeDepot.svg/1920px-TheHomeDepot.svg.png',
       color: 'orange'
     },
@@ -1454,7 +1456,8 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
       name: 'Lowe\'s',
       price: item.unitPrice * 1.12,
       availability: 'In Stock',
-      delivery: '2-4 days',
+      delivery: '2-4 day delivery',
+      sku: 'LOW-5013098432',
       logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Lowes_Companies_Logo.svg/3840px-Lowes_Companies_Logo.svg.png',
       color: 'blue'
     },
@@ -1462,7 +1465,8 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
       name: 'Tractor Supply',
       price: item.unitPrice * 1.15,
       availability: 'Limited',
-      delivery: '5-7 days',
+      delivery: '5-7 day delivery',
+      sku: 'TSC-20946813',
       logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/TractorSupplyCompanylogo.svg/3840px-TractorSupplyCompanylogo.svg.png',
       color: 'gray'
     }
@@ -1536,6 +1540,15 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
                   <X className="w-4 h-4 text-gray-500" />
                 </button>
               </div>
+
+              {/* Local pricing info */}
+              <div className="mt-3 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                  <span className="text-xs font-medium text-blue-900">Local prices for San Francisco, CA 94104</span>
+                </div>
+                <p className="text-[10px] text-blue-700 mt-0.5 ml-5">Prices include local availability and delivery charges to job site</p>
+              </div>
             </div>
 
             {/* Retailer List */}
@@ -1584,6 +1597,7 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
 
                       <div>
                         <div className="font-medium text-gray-900">{retailer.name}</div>
+                        <div className="text-[10px] text-gray-400 font-mono mt-0.5">SKU: {retailer.sku}</div>
                         <div className="flex items-center gap-3 mt-1">
                           <span className="text-xs text-gray-500">{retailer.availability}</span>
                           <span className="text-xs text-gray-400">•</span>
@@ -1754,7 +1768,8 @@ function EditDrawer({ item, onClose, onSave }) {
       name: 'Ace Hardware',
       price: item.unitPrice,
       availability: 'In Stock',
-      delivery: 'Same day',
+      delivery: 'Same day delivery',
+      sku: 'ACE-4821739',
       logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Ace_Hardware_Logo.svg/3840px-Ace_Hardware_Logo.svg.png',
       color: 'red'
     },
@@ -1762,7 +1777,8 @@ function EditDrawer({ item, onClose, onSave }) {
       name: 'Home Depot',
       price: item.unitPrice * 1.08,
       availability: 'In Stock',
-      delivery: '3-5 days',
+      delivery: '3-5 day delivery',
+      sku: 'HD-1000692847',
       logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/TheHomeDepot.svg/1920px-TheHomeDepot.svg.png',
       color: 'orange'
     },
@@ -1770,7 +1786,8 @@ function EditDrawer({ item, onClose, onSave }) {
       name: 'Lowe\'s',
       price: item.unitPrice * 1.12,
       availability: 'In Stock',
-      delivery: '2-4 days',
+      delivery: '2-4 day delivery',
+      sku: 'LOW-5013098432',
       logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Lowes_Companies_Logo.svg/3840px-Lowes_Companies_Logo.svg.png',
       color: 'blue'
     },
@@ -1778,7 +1795,8 @@ function EditDrawer({ item, onClose, onSave }) {
       name: 'Tractor Supply',
       price: item.unitPrice * 1.15,
       availability: 'Limited',
-      delivery: '5-7 days',
+      delivery: '5-7 day delivery',
+      sku: 'TSC-20946813',
       logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/TractorSupplyCompanylogo.svg/3840px-TractorSupplyCompanylogo.svg.png',
       color: 'gray'
     }
@@ -1912,6 +1930,15 @@ function EditDrawer({ item, onClose, onSave }) {
                 </button>
               </div>
               <p className="text-[12px] text-stone-500 mt-1">Select a retailer to update unit price</p>
+
+              {/* Local pricing info */}
+              <div className="mt-3 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                  <span className="text-xs font-medium text-blue-900">Local prices for San Francisco, CA 94104</span>
+                </div>
+                <p className="text-[10px] text-blue-700 mt-0.5 ml-5">Prices include local availability and delivery charges to job site</p>
+              </div>
             </div>
 
             <div className="p-4 space-y-2 max-h-80 overflow-y-auto">
@@ -1945,7 +1972,8 @@ function EditDrawer({ item, onClose, onSave }) {
                     </div>
                     <div className="text-left">
                       <div className="text-[13px] font-medium text-stone-900">{retailer.name}</div>
-                      <div className="text-[10px] text-stone-500">{retailer.availability} • {retailer.delivery}</div>
+                      <div className="text-[9px] text-stone-400 font-mono">SKU: {retailer.sku}</div>
+                      <div className="text-[10px] text-stone-500 mt-0.5">{retailer.availability} • {retailer.delivery}</div>
                     </div>
                   </div>
                   <div className="text-[14px] font-semibold text-stone-900 tabular group-hover:text-blue-600 transition-colors">

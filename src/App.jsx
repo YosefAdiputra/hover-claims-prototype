@@ -2619,7 +2619,7 @@ function Confirmation({ onReset, totals }) {
       </div>
 
       <div className="text-[11px] uppercase tracking-wider text-emerald-700 font-semibold mb-3">Scope Approved</div>
-      <h1 className="font-display text-5xl text-stone-900 leading-tight">Sent to Xactimate.</h1>
+      <h1 className="font-display text-5xl text-stone-900 leading-tight">Sent to Carrier.</h1>
       <p className="text-stone-500 mt-4 text-[15px] max-w-md mx-auto">
         Claim <span className="font-mono-ui text-stone-700">{CLAIM.id}</span> is now in Summit Mutual's carrier review queue. Sarah Henderson will be notified.
       </p>

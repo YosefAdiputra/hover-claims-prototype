@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Search, ChevronRight, ChevronDown, Camera, Box, Ruler, FileText,
   CheckCircle2, AlertTriangle, Sparkles, ArrowRight, ArrowLeft,
   Edit3, Check, X, Shield, Home, Layers, MapPin, Calendar, User,
   Zap, Eye, MoreHorizontal, Send, Clock, FileCheck, Maximize2, Info,
-  Hexagon, Activity, TrendingUp, TrendingDown, Building2, CloudHail, Wind, Droplets
+  Hexagon, Activity, TrendingUp, TrendingDown, Building2, CloudHail, Wind, Droplets,
+  Brain, HardHat
 } from 'lucide-react';
 import House3D from './House3D';
 import House3DAdvanced from './House3DAdvanced';
@@ -13,8 +14,8 @@ import House3DAdvanced from './House3DAdvanced';
 const CLAIM = {
   id: 'CLM-2026-04812',
   policyholder: 'Sarah Henderson',
-  address: '4421 Oak Ridge Drive',
-  city: 'Henderson, NV 89052',
+  address: '2847 Pacific Avenue',
+  city: 'San Francisco, CA 94115',
   carrier: 'Summit Mutual Insurance',
   policyNumber: 'SM-88241-HO3',
   lossType: 'Hail',
@@ -32,78 +33,78 @@ const CLAIM = {
 
 const INITIAL_LINE_ITEMS = [
   // ROOF
-  { id: 1, category: 'Roof', code: 'RFG 240', description: 'Remove laminated comp. shingle roofing — w/ felt', qty: 24.5, unit: 'SQ', unitPrice: 72.40, confidence: 96, status: 'pending',
+  { id: 1, category: 'Roof', code: 'RFG 240', description: 'Remove laminated comp. shingle roofing — w/ felt', qty: 24.5, unit: 'SQ', unitPrice: 72.40, materialCost: 18.60, laborCost: 53.80, confidence: 96, status: 'pending',
     evidence: ['North slope — hail impact overview', 'North slope — strike density detail', 'East slope — impact pattern', 'East slope — granule loss close-up', 'Ridge line — bruising detail', 'Southeast corner — damage extent'],
     explanation: 'Recommended removal of existing shingles on north and east slopes based on 6 photos showing hail bruising at >8 strikes per 100 sq ft, which exceeds Summit Mutual\'s repair-vs-replace threshold. 3D model measurements confirm 24.5 squares of affected area.',
     comparables: 12, inspectorNote: 'Severe granule loss across north and east slopes. Multiple hail bruises visible on ridge.' },
-  { id: 2, category: 'Roof', code: 'RFG 220', description: 'Laminated comp. shingle roofing — w/ felt', qty: 24.5, unit: 'SQ', unitPrice: 385.15, confidence: 96, status: 'pending',
+  { id: 2, category: 'Roof', code: 'RFG 220', description: 'Laminated comp. shingle roofing — w/ felt', qty: 24.5, unit: 'SQ', unitPrice: 385.15, materialCost: 185.20, laborCost: 199.95, confidence: 96, status: 'pending',
     evidence: ['North slope — replacement area', 'East slope — replacement area', 'Material spec reference', '3D measurement overlay'],
     explanation: 'Replacement quantity matched to removal scope. Material grade (30-year architectural) selected to match existing based on inspector note and Summit Mutual\'s like-kind-and-quality guideline.',
     comparables: 12, inspectorNote: 'Existing material: 30-year architectural laminated.' },
-  { id: 3, category: 'Roof', code: 'RFG DRIP', description: 'R&R Drip edge', qty: 142, unit: 'LF', unitPrice: 4.12, confidence: 93, status: 'pending',
+  { id: 3, category: 'Roof', code: 'RFG DRIP', description: 'R&R Drip edge', qty: 142, unit: 'LF', unitPrice: 4.12, materialCost: 1.85, laborCost: 2.27, confidence: 93, status: 'pending',
     evidence: ['Eave line north', 'Eave line east', 'Rake edge detail'],
     explanation: 'Drip edge replacement required when shingles are removed per carrier guideline. Linear footage calculated from 3D model perimeter of affected slopes.',
     comparables: 18, inspectorNote: 'Drip edge bent at multiple points along north eave.' },
-  { id: 4, category: 'Roof', code: 'RFG IWS', description: 'Ice & water shield', qty: 320, unit: 'SF', unitPrice: 2.18, confidence: 91, status: 'pending',
+  { id: 4, category: 'Roof', code: 'RFG IWS', description: 'Ice & water shield', qty: 320, unit: 'SF', unitPrice: 2.18, materialCost: 1.25, laborCost: 0.93, confidence: 91, status: 'pending',
     evidence: ['Eave detail — existing underlayment', '3D eave measurement'],
     explanation: 'Required at eaves per IRC code for this climate zone. Quantity based on 3 ft from eave edge across affected slope length.',
     comparables: 15, inspectorNote: 'Existing ice & water shield appears intact but recommend replacement with new underlayment.' },
-  { id: 5, category: 'Roof', code: 'RFG RIDGE', description: 'R&R Ridge cap — composition shingles', qty: 52, unit: 'LF', unitPrice: 8.96, confidence: 94, status: 'pending',
+  { id: 5, category: 'Roof', code: 'RFG RIDGE', description: 'R&R Ridge cap — composition shingles', qty: 52, unit: 'LF', unitPrice: 8.96, materialCost: 3.45, laborCost: 5.51, confidence: 94, status: 'pending',
     evidence: ['Ridge line full view', 'Ridge cap damage detail'],
     explanation: 'Ridge cap replacement required with full shingle replacement. Linear footage matches 3D model ridge measurement.',
     comparables: 12, inspectorNote: 'Ridge cap showing significant hail bruising.' },
-  { id: 6, category: 'Roof', code: 'RFG FLASH', description: 'R&R Flashing — pipe jack', qty: 3, unit: 'EA', unitPrice: 48.30, confidence: 89, status: 'pending',
+  { id: 6, category: 'Roof', code: 'RFG FLASH', description: 'R&R Flashing — pipe jack', qty: 3, unit: 'EA', unitPrice: 48.30, materialCost: 12.80, laborCost: 35.50, confidence: 89, status: 'pending',
     evidence: ['Pipe jack 1 — north slope', 'Pipe jack 2 — rear', 'Pipe jack 3 — east'],
     explanation: '3 pipe jacks identified in inspection photos on affected slopes. Standard practice to replace during full re-roof.',
     comparables: 20, inspectorNote: 'All three pipe jack flashings show impact damage and require replacement.' },
-  { id: 7, category: 'Roof', code: 'RFG FELT', description: 'Roofing felt — 15 lb', qty: 24.5, unit: 'SQ', unitPrice: 34.20, confidence: 95, status: 'pending',
+  { id: 7, category: 'Roof', code: 'RFG FELT', description: 'Roofing felt — 15 lb', qty: 24.5, unit: 'SQ', unitPrice: 34.20, materialCost: 22.80, laborCost: 11.40, confidence: 95, status: 'pending',
     evidence: ['Underlayment reference'],
     explanation: 'Felt underlayment quantity matches shingle replacement area.',
     comparables: 22, inspectorNote: 'Existing felt underlayment exposed in damaged areas shows weathering.' },
 
   // GUTTERS
-  { id: 8, category: 'Gutters', code: 'GUT 5IN', description: 'R&R Gutter — aluminum, 5"', qty: null, unit: 'LF', unitPrice: 9.85, confidence: 58, status: 'needs_review',
+  { id: 8, category: 'Gutters', code: 'GUT 5IN', description: 'R&R Gutter — aluminum, 5"', qty: null, unit: 'LF', unitPrice: 9.85, materialCost: 4.20, laborCost: 5.65, confidence: 58, status: 'needs_review',
     evidence: ['Gutter north — possible damage', 'Gutter east — possible damage'],
     explanation: 'AI detected possible hail damage in 2 photos but could not determine extent. Inspector\'s checklist did not include gutter measurements.',
     comparables: 8, inspectorNote: 'Gutter system pulling away from roofline with visible hail dents along north section.' },
-  { id: 9, category: 'Gutters', code: 'GUT DS', description: 'R&R Downspout — aluminum', qty: 24, unit: 'LF', unitPrice: 8.40, confidence: 87, status: 'pending',
+  { id: 9, category: 'Gutters', code: 'GUT DS', description: 'R&R Downspout — aluminum', qty: 24, unit: 'LF', unitPrice: 8.40, materialCost: 3.65, laborCost: 4.75, confidence: 87, status: 'pending',
     evidence: ['Downspout north', 'Downspout east'],
     explanation: 'Two downspouts visible with dent damage consistent with hail impact.',
     comparables: 14, inspectorNote: 'Dents visible on both north-facing downspouts.' },
 
   // FASCIA
-  { id: 10, category: 'Fascia', code: 'FCA 1X6', description: 'R&R Fascia board — 1"x6"', qty: 36, unit: 'LF', unitPrice: 6.80, confidence: 74, status: 'pending',
+  { id: 10, category: 'Fascia', code: 'FCA 1X6', description: 'R&R Fascia board — 1"x6"', qty: 36, unit: 'LF', unitPrice: 6.80, materialCost: 2.85, laborCost: 3.95, confidence: 74, status: 'pending',
     evidence: ['Fascia damage north', 'Fascia damage east'],
     explanation: 'Partial fascia damage identified on north eave. Quantity estimated from visible damage zone in photos; measurement not captured by inspector.',
     comparables: 6, inspectorNote: 'Hail damage to fascia board with splintering along north eave edge.' },
-  { id: 11, category: 'Fascia', code: 'PNT FCA', description: 'Paint fascia — 1 coat', qty: 36, unit: 'LF', unitPrice: 2.10, confidence: 74, status: 'pending',
+  { id: 11, category: 'Fascia', code: 'PNT FCA', description: 'Paint fascia — 1 coat', qty: 36, unit: 'LF', unitPrice: 2.10, materialCost: 0.65, laborCost: 1.45, confidence: 74, status: 'pending',
     evidence: ['Fascia reference'],
     explanation: 'Paint applied to match fascia replacement quantity.',
     comparables: 6, inspectorNote: 'Paint chipping and damage corresponds to fascia board replacement area.' },
 
   // SIDING
-  { id: 12, category: 'Siding', code: 'SDG VNL', description: 'R&R Siding — vinyl, detached', qty: 48, unit: 'SF', unitPrice: 6.25, confidence: 81, status: 'pending',
+  { id: 12, category: 'Siding', code: 'SDG VNL', description: 'R&R Siding — vinyl, detached', qty: 48, unit: 'SF', unitPrice: 6.25, materialCost: 2.80, laborCost: 3.45, confidence: 81, status: 'pending',
     evidence: ['North elevation — siding', 'East elevation — impact'],
     explanation: 'Localized siding damage on north elevation from hail impact. 4 damaged panels identified across ~48 SF.',
     comparables: 9, inspectorNote: 'Cracking visible on lower north elevation panels.' },
-  { id: 13, category: 'Siding', code: 'PNT EXT', description: 'Paint exterior — spot repair', qty: 48, unit: 'SF', unitPrice: 1.85, confidence: 81, status: 'pending',
+  { id: 13, category: 'Siding', code: 'PNT EXT', description: 'Paint exterior — spot repair', qty: 48, unit: 'SF', unitPrice: 1.85, materialCost: 0.55, laborCost: 1.30, confidence: 81, status: 'pending',
     evidence: ['Siding reference'],
     explanation: 'Spot paint matched to siding replacement area.',
     comparables: 9, inspectorNote: 'Primer and topcoat needed to match existing siding color after panel replacement.' },
 ];
 
 const DASHBOARD_CLAIMS = [
-  { id: 'CLM-2026-04812', address: '4421 Oak Ridge Dr', city: 'Henderson, NV', loss: 'Hail', date: 'Apr 6', status: 'draft_ready', confidence: 94, total: 18420, clickable: true,
-    image: 'https://media.gettyimages.com/id/1244619240/photo/biz-real-nevada-homeprices-2-lv.jpg?s=1024x1024&w=gi&k=20&c=hi1RKkWKskdNTVuwXP4bPOxQdQi9eSNJRePuAcim7J4=' },
-  { id: 'CLM-2026-04807', address: '892 Desert Willow Ln', city: 'Las Vegas, NV', loss: 'Wind', date: 'Apr 6', status: 'draft_ready', confidence: 91, total: 12840,
+  { id: 'CLM-2026-04812', address: '2847 Pacific Ave', city: 'San Francisco, CA', loss: 'Hail', date: 'Apr 6', status: 'draft_ready', confidence: 94, total: 18420, clickable: true,
+    image: 'https://photos.zillowstatic.com/fp/063e61c4d756c4b0b0b93d8701023db3-cc_ft_1536.webp' },
+  { id: 'CLM-2026-04807', address: '1456 Haight St', city: 'San Francisco, CA', loss: 'Wind', date: 'Apr 6', status: 'draft_ready', confidence: 91, total: 12840,
     image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=400&h=300&fit=crop' },
-  { id: 'CLM-2026-04803', address: '15 Summit Ridge Ct', city: 'Reno, NV', loss: 'Hail', date: 'Apr 5', status: 'needs_review', confidence: 72, total: 24100,
+  { id: 'CLM-2026-04803', address: '345 University Ave', city: 'Palo Alto, CA', loss: 'Hail', date: 'Apr 5', status: 'needs_review', confidence: 72, total: 24100,
     image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop' },
-  { id: 'CLM-2026-04801', address: '2204 Canyon View Dr', city: 'Sparks, NV', loss: 'Water', date: 'Apr 5', status: 'processing', confidence: null, total: null,
+  { id: 'CLM-2026-04801', address: '892 Castro St', city: 'Mountain View, CA', loss: 'Water', date: 'Apr 5', status: 'processing', confidence: null, total: null,
     image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop' },
-  { id: 'CLM-2026-04795', address: '778 Juniper Hill Rd', city: 'Carson City, NV', loss: 'Hail', date: 'Apr 4', status: 'draft_ready', confidence: 97, total: 8420,
+  { id: 'CLM-2026-04795', address: '2156 Shattuck Ave', city: 'Berkeley, CA', loss: 'Hail', date: 'Apr 4', status: 'draft_ready', confidence: 97, total: 8420,
     image: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&h=300&fit=crop' },
-  { id: 'CLM-2026-04790', address: '3301 Red Rock Blvd', city: 'Henderson, NV', loss: 'Wind', date: 'Apr 4', status: 'manual', confidence: null, total: null,
+  { id: 'CLM-2026-04790', address: '789 Broadway', city: 'Oakland, CA', loss: 'Wind', date: 'Apr 4', status: 'manual', confidence: null, total: null,
     image: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=400&h=300&fit=crop' },
 ];
 
@@ -266,11 +267,13 @@ export default function HoverClaimsPrototype() {
           lineItems={lineItems}
           attested={attested}
           setAttested={setAttested}
+          setScreen={setScreen}
           onBack={() => setScreen('review')}
           onSubmit={() => setShowSuccessPopup(true)}
         />
       )}
       {screen === 'confirmation' && <Confirmation onReset={() => { setScreen('dashboard'); setLineItems(INITIAL_LINE_ITEMS); setAttested(false); }} totals={totals} />}
+      {screen === 'negotiation' && <ContractorNegotiationScreen lineItems={lineItems} setLineItems={setLineItems} totals={totals} onBack={() => setScreen('approve')} onSubmit={() => setScreen('confirmation')} />}
 
       {editingItem && <EditDrawer item={editingItem} onClose={() => setEditingItem(null)} onSave={handleSaveEdit} />}
       {expandedPhoto && <PhotoLightbox photo={expandedPhoto} onClose={() => setExpandedPhoto(null)} />}
@@ -743,7 +746,9 @@ function Summary({ onBack, onReview, totals }) {
 
             {/* Price Hero */}
             <div className="p-6 text-center border-b border-gray-100">
-              <div className="text-[48px] font-semibold text-[#1D1D1F] leading-none tracking-tight mb-3">{fmt(totals.total)}</div>
+              <div className="text-[12px] uppercase tracking-wider text-[#86868B] font-medium mb-2">Total Repair Estimate</div>
+              <div className="text-[48px] font-semibold text-[#1D1D1F] leading-none tracking-tight mb-1">{fmt(totals.total)}</div>
+              <div className="text-[14px] text-[#86868B] mb-3">Including materials + local San Francisco, CA labor</div>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 rounded-full text-blue-600 font-medium text-[13px] mb-2">
                 <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
                 94% Confident
@@ -905,6 +910,7 @@ function ReviewScreen({ lineItems, selectedItem, setSelectedItemId, onApprove, o
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-stone-500">Current total</div>
                 <div className="font-display text-2xl text-stone-900 leading-none tabular">{fmt(totals.total)}</div>
+                <div className="text-[9px] text-stone-400 mt-0.5">incl. labor & materials</div>
               </div>
             </div>
             <button
@@ -1122,6 +1128,9 @@ function LineItemRow({ item, selected, onSelect }) {
             <div className="text-[12px] text-stone-900 font-medium tabular">
               {item.qty != null ? fmt(item.qty * item.unitPrice) : '—'}
             </div>
+            {item.qty != null && (
+              <div className="text-[10px] text-stone-400 mt-0.5">incl. labor</div>
+            )}
           </div>
 
           {/* Status indicators */}
@@ -1604,25 +1613,182 @@ function ThreeDView() {
 }
 
 function MeasurementsView() {
+  const [selectedView, setSelectedView] = useState('blueprint');
+
   return (
-    <div className="bg-white rounded-lg border border-stone-200 p-6">
-      <div className="text-[12px] text-stone-600 mb-4">Measurements extracted from Hover 3D digital twin</div>
-      <div className="space-y-3">
-        {[
-          { label: 'North slope area', value: '1,312 sf (13.1 SQ)' },
-          { label: 'East slope area', value: '1,138 sf (11.4 SQ)' },
-          { label: 'Total affected', value: '2,450 sf (24.5 SQ)' },
-          { label: 'Ridge length', value: '52 LF' },
-          { label: 'North eave length', value: '76 LF' },
-          { label: 'East eave length', value: '66 LF' },
-          { label: 'Roof pitch', value: '6/12' },
-        ].map((m, i) => (
-          <div key={i} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0">
-            <span className="text-[13px] text-stone-600">{m.label}</span>
-            <span className="text-[13px] text-stone-900 font-medium tabular font-mono-ui">{m.value}</span>
-          </div>
-        ))}
+    <div className="space-y-4">
+      {/* View Toggle */}
+      <div className="flex gap-2 bg-stone-100 p-1 rounded-lg">
+        <button
+          onClick={() => setSelectedView('blueprint')}
+          className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+            selectedView === 'blueprint' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-600 hover:text-stone-900'
+          }`}
+        >
+          Architectural Drawing
+        </button>
+        <button
+          onClick={() => setSelectedView('measurements')}
+          className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+            selectedView === 'measurements' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-600 hover:text-stone-900'
+          }`}
+        >
+          Measurements List
+        </button>
       </div>
+
+      {/* Blueprint View */}
+      {selectedView === 'blueprint' && (
+        <div className="bg-white rounded-lg border border-stone-200 p-6">
+          <div className="text-[12px] text-stone-600 mb-4">Architectural roof plan with damage zones</div>
+          <div className="relative bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-8" style={{ minHeight: '400px' }}>
+            {/* SVG Blueprint */}
+            <svg viewBox="0 0 800 600" className="w-full h-full">
+              {/* Grid pattern */}
+              <defs>
+                <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#cbd5e1" strokeWidth="0.5" opacity="0.5"/>
+                </pattern>
+                <pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse">
+                  <path d="M0,10 L10,0 M-2,2 L2,-2 M8,12 L12,8" stroke="#ef4444" strokeWidth="1" opacity="0.3"/>
+                </pattern>
+              </defs>
+              <rect width="800" height="600" fill="url(#grid)" />
+
+              {/* Main roof outline */}
+              <g transform="translate(400,300)">
+                {/* North slope with damage hatching */}
+                <path d="M -200,-100 L 0,-180 L 200,-100 L 200,0 L -200,0 Z"
+                      fill="url(#hatch)" stroke="#1e40af" strokeWidth="2" strokeDasharray="5,3"/>
+                <text x="-100" y="-50" className="fill-blue-900 text-sm font-medium">NORTH SLOPE</text>
+                <text x="-100" y="-30" className="fill-blue-700 text-xs">1,312 sf (13.1 SQ)</text>
+                <text x="-100" y="-10" className="fill-red-600 text-xs font-medium">DAMAGE ZONE</text>
+
+                {/* East slope with damage hatching */}
+                <path d="M 200,-100 L 200,100 L 120,150 L 0,100 L 0,-180 L 200,-100 Z"
+                      fill="url(#hatch)" stroke="#1e40af" strokeWidth="2" strokeDasharray="5,3"/>
+                <text x="80" y="30" className="fill-blue-900 text-sm font-medium">EAST SLOPE</text>
+                <text x="80" y="50" className="fill-blue-700 text-xs">1,138 sf (11.4 SQ)</text>
+                <text x="80" y="70" className="fill-red-600 text-xs font-medium">DAMAGE ZONE</text>
+
+                {/* South slope (undamaged) */}
+                <path d="M -200,0 L -200,100 L 0,180 L 200,100 L 200,0 Z"
+                      fill="none" stroke="#64748b" strokeWidth="2"/>
+                <text x="-50" y="120" className="fill-gray-600 text-sm">SOUTH SLOPE</text>
+                <text x="-50" y="140" className="fill-gray-500 text-xs">No damage</text>
+
+                {/* West slope (undamaged) */}
+                <path d="M -200,-100 L -200,100 L -120,150 L 0,100 L 0,-180 Z"
+                      fill="none" stroke="#64748b" strokeWidth="2"/>
+                <text x="-150" y="30" className="fill-gray-600 text-sm">WEST SLOPE</text>
+                <text x="-150" y="50" className="fill-gray-500 text-xs">No damage</text>
+
+                {/* Ridge line */}
+                <line x1="-200" y1="-100" x2="200" y2="-100" stroke="#dc2626" strokeWidth="3"/>
+                <text x="-30" y="-110" className="fill-red-700 text-xs font-bold">RIDGE: 52 LF</text>
+
+                {/* Eave measurements */}
+                <g>
+                  {/* North eave */}
+                  <line x1="-200" y1="0" x2="200" y2="0" stroke="#059669" strokeWidth="2" strokeDasharray="2,2"/>
+                  <text x="210" y="5" className="fill-green-700 text-xs">North Eave: 76 LF</text>
+
+                  {/* East eave */}
+                  <line x1="200" y1="-100" x2="200" y2="100" stroke="#059669" strokeWidth="2" strokeDasharray="2,2"/>
+                  <text x="150" y="-120" className="fill-green-700 text-xs" transform="rotate(-90 150 -120)">East Eave: 66 LF</text>
+                </g>
+
+                {/* Damage markers */}
+                {[
+                  { x: -100, y: -60, label: 'D1' },
+                  { x: -50, y: -40, label: 'D2' },
+                  { x: 50, y: -50, label: 'D3' },
+                  { x: 100, y: 20, label: 'D4' },
+                  { x: 120, y: 60, label: 'D5' },
+                  { x: -80, y: -30, label: 'D6' },
+                  { x: 30, y: -70, label: 'D7' },
+                  { x: 140, y: 10, label: 'D8' },
+                ].map((d, i) => (
+                  <g key={i}>
+                    <circle cx={d.x} cy={d.y} r="8" fill="#ef4444" opacity="0.8"/>
+                    <text x={d.x} y={d.y + 3} className="fill-white text-xs font-bold" textAnchor="middle">{d.label}</text>
+                  </g>
+                ))}
+
+                {/* Compass */}
+                <g transform="translate(280, -200)">
+                  <circle cx="0" cy="0" r="25" fill="white" stroke="#374151" strokeWidth="2"/>
+                  <path d="M 0,-20 L 5,-5 L 0,0 L -5,-5 Z" fill="#374151"/>
+                  <text x="0" y="-25" className="fill-gray-700 text-sm font-bold" textAnchor="middle">N</text>
+                </g>
+
+                {/* Pitch indicator */}
+                <g transform="translate(-280, -200)">
+                  <rect x="-40" y="-15" width="80" height="30" fill="white" stroke="#374151" strokeWidth="1" rx="3"/>
+                  <text x="0" y="-2" className="fill-gray-700 text-xs font-medium" textAnchor="middle">PITCH</text>
+                  <text x="0" y="10" className="fill-gray-900 text-sm font-bold" textAnchor="middle">6/12</text>
+                </g>
+              </g>
+
+              {/* Legend */}
+              <g transform="translate(50, 520)">
+                <rect x="0" y="0" width="200" height="60" fill="white" stroke="#cbd5e1" strokeWidth="1" rx="4" opacity="0.95"/>
+                <text x="10" y="20" className="fill-gray-700 text-xs font-bold">LEGEND</text>
+                <rect x="10" y="25" width="20" height="10" fill="url(#hatch)"/>
+                <text x="35" y="33" className="fill-gray-600 text-xs">Hail damage area</text>
+                <circle cx="20" cy="45" r="4" fill="#ef4444"/>
+                <text x="35" y="48" className="fill-gray-600 text-xs">Damage point</text>
+              </g>
+
+              {/* Title block */}
+              <g transform="translate(550, 520)">
+                <rect x="0" y="0" width="200" height="60" fill="white" stroke="#cbd5e1" strokeWidth="1" rx="4" opacity="0.95"/>
+                <text x="10" y="18" className="fill-gray-700 text-xs font-bold">ROOF DAMAGE ASSESSMENT</text>
+                <text x="10" y="32" className="fill-gray-600 text-xs">2847 Pacific Avenue</text>
+                <text x="10" y="44" className="fill-gray-600 text-xs">San Francisco, CA 94115</text>
+                <text x="10" y="56" className="fill-gray-500 text-xs">Scale: 1" = 20'</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      )}
+
+      {/* Measurements List View */}
+      {selectedView === 'measurements' && (
+        <div className="bg-white rounded-lg border border-stone-200 p-6">
+          <div className="text-[12px] text-stone-600 mb-4">Measurements extracted from Hover 3D digital twin</div>
+          <div className="space-y-3">
+            {[
+              { label: 'North slope area', value: '1,312 sf (13.1 SQ)', status: 'damaged' },
+              { label: 'East slope area', value: '1,138 sf (11.4 SQ)', status: 'damaged' },
+              { label: 'South slope area', value: '1,086 sf (10.9 SQ)', status: 'undamaged' },
+              { label: 'West slope area', value: '1,164 sf (11.6 SQ)', status: 'undamaged' },
+              { label: 'Total roof area', value: '4,700 sf (47.0 SQ)', status: 'total' },
+              { label: 'Total affected', value: '2,450 sf (24.5 SQ)', status: 'affected' },
+              { label: 'Ridge length', value: '52 LF', status: 'measurement' },
+              { label: 'North eave length', value: '76 LF', status: 'measurement' },
+              { label: 'East eave length', value: '66 LF', status: 'measurement' },
+              { label: 'South eave length', value: '76 LF', status: 'measurement' },
+              { label: 'West eave length', value: '66 LF', status: 'measurement' },
+              { label: 'Roof pitch', value: '6/12', status: 'specification' },
+              { label: 'Roof height', value: '28.5 ft', status: 'specification' },
+            ].map((m, i) => (
+              <div key={i} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-[13px] text-stone-600">{m.label}</span>
+                  {m.status === 'damaged' && (
+                    <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-[10px] font-medium rounded">DAMAGED</span>
+                  )}
+                  {m.status === 'affected' && (
+                    <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-medium rounded">AFFECTED</span>
+                  )}
+                </div>
+                <span className="text-[13px] text-stone-900 font-medium tabular font-mono-ui">{m.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1772,7 +1938,17 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
             </div>
             <span className="text-stone-900 tabular">{fmtDetail(currentPrice)}</span>
           </div>
-          <div className="flex justify-between pt-2 border-t border-stone-100"><span className="text-stone-500">Line total</span><span className="text-stone-900 font-semibold tabular">{lineTotal != null ? fmt(lineTotal) : '—'}</span></div>
+          <div className="ml-4 mt-1 space-y-0.5">
+            <div className="flex justify-between text-xs">
+              <span className="text-stone-400">Materials:</span>
+              <span className="text-stone-600 tabular">{fmtDetail(item.materialCost)}</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-stone-400">Labor (San Francisco, CA):</span>
+              <span className="text-stone-600 tabular">{fmtDetail(item.laborCost)}</span>
+            </div>
+          </div>
+          <div className="flex justify-between pt-2 border-t border-stone-100"><span className="text-stone-500">Line total <span className="text-xs text-stone-400">(incl. labor)</span></span><span className="text-stone-900 font-semibold tabular">{lineTotal != null ? fmt(lineTotal) : '—'}</span></div>
         </div>
       </div>
 
@@ -2110,7 +2286,7 @@ function EditDrawer({ item, onClose, onSave }) {
                 onChange={(e) => setUnitPrice(parseFloat(e.target.value) || 0)}
                 className="w-full mt-1 px-3 py-2 bg-white border border-stone-200 rounded-lg text-[14px] text-stone-900 tabular focus:outline-none focus:ring-2 focus:ring-stone-900/10 focus:border-stone-400"
               />
-              <div className="mt-1.5 text-[10px] text-stone-400">Regional: {fmtDetail(item.unitPrice)}</div>
+              <div className="mt-1.5 text-[10px] text-stone-400">Regional: {fmtDetail(item.unitPrice)} (materials + labor)</div>
             </div>
           </div>
 
@@ -2299,7 +2475,7 @@ function PhotoLightbox({ photo, onClose }) {
 }
 
 // ============ APPROVE SCREEN ============
-function ApproveScreen({ totals, lineItems, attested, setAttested, onBack, onSubmit }) {
+function ApproveScreen({ totals, lineItems, attested, setAttested, setScreen, onBack, onSubmit }) {
   const canSubmit = attested && totals.needsReview === 0;
 
   return (
@@ -2316,14 +2492,22 @@ function ApproveScreen({ totals, lineItems, attested, setAttested, onBack, onSub
 
       {/* Metric strip */}
       <div className="bg-white border border-stone-200 rounded-xl p-4 md:p-6 mb-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
           <div>
             <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Total estimate</div>
             <div className="font-display text-2xl md:text-4xl text-stone-900 tabular mt-1">{fmt(totals.total)}</div>
           </div>
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Line items</div>
-            <div className="font-display text-2xl md:text-4xl text-stone-900 tabular mt-1">{lineItems.filter(i => i.status !== 'rejected').length}</div>
+            <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Items approved</div>
+            <div className="font-display text-2xl md:text-4xl text-emerald-700 tabular mt-1">
+              {lineItems.filter(i => i.status === 'approved').length}/{lineItems.length}
+            </div>
+          </div>
+          <div>
+            <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Items reviewed</div>
+            <div className="font-display text-2xl md:text-4xl text-stone-900 tabular mt-1">
+              {lineItems.filter(i => i.status === 'resolved').length}
+            </div>
           </div>
           <div>
             <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Your edits</div>
@@ -2346,7 +2530,7 @@ function ApproveScreen({ totals, lineItems, attested, setAttested, onBack, onSub
           <ComplianceRow ok label="Required documentation present" detail="84 photos, 23 measurements, inspector checklist complete" />
           <ComplianceRow ok label="Audit trail complete" detail={`${totals.edits} edits logged with reason codes`} />
           <ComplianceRow ok={totals.needsReview === 0} label="All exceptions resolved" detail={totals.needsReview === 0 ? 'No outstanding items need review' : `${totals.needsReview} items still need review — go back to resolve`} />
-          <ComplianceRow ok label="Within regional comparables" detail="Estimate is within 8% of comparable hail claims in Henderson, NV" />
+          <ComplianceRow ok label="Within regional comparables" detail="Estimate is within 8% of comparable hail claims in San Francisco, CA" />
         </div>
       </div>
 
@@ -2354,7 +2538,7 @@ function ApproveScreen({ totals, lineItems, attested, setAttested, onBack, onSub
       <div className="bg-white border border-stone-200 rounded-xl p-6 mb-6">
         <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium mb-4">Cost Breakdown</div>
         <div className="space-y-2.5 text-[13px]">
-          <div className="flex justify-between"><span className="text-stone-600">Subtotal</span><span className="text-stone-900 tabular">{fmt(totals.subtotal)}</span></div>
+          <div className="flex justify-between"><span className="text-stone-600">Subtotal <span className="text-xs text-stone-400">(materials + labor)</span></span><span className="text-stone-900 tabular">{fmt(totals.subtotal)}</span></div>
           <div className="flex justify-between"><span className="text-stone-600">Overhead & profit (20%)</span><span className="text-stone-900 tabular">{fmt(totals.oAndP)}</span></div>
           <div className="flex justify-between"><span className="text-stone-600">Sales tax (8.25%)</span><span className="text-stone-900 tabular">{fmt(totals.tax)}</span></div>
           <div className="flex justify-between pt-3 border-t border-stone-200 text-[15px]"><span className="text-stone-900 font-semibold">Total</span><span className="text-stone-900 font-semibold tabular">{fmt(totals.total)}</span></div>
@@ -2388,13 +2572,22 @@ function ApproveScreen({ totals, lineItems, attested, setAttested, onBack, onSub
         <button onClick={onBack} className="text-[13px] text-stone-600 hover:text-stone-900 px-4 py-2">
           Save as draft
         </button>
-        <button
-          onClick={onSubmit}
-          disabled={!canSubmit}
-          className={`px-6 py-3 rounded-lg text-[14px] font-medium flex items-center gap-2 transition-all ${canSubmit ? 'bg-stone-900 hover:bg-stone-800 text-white shadow-sm' : 'bg-stone-200 text-stone-400 cursor-not-allowed'}`}
-        >
-          Approve & send to Xactimate <Send className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setScreen('negotiation')}
+            className="px-4 py-3 rounded-lg text-[14px] font-medium flex items-center gap-2 bg-amber-100 hover:bg-amber-200 text-amber-900 transition-all"
+          >
+            <HardHat className="w-4 h-4" />
+            View Contractor Negotiation
+          </button>
+          <button
+            onClick={onSubmit}
+            disabled={!canSubmit}
+            className={`px-6 py-3 rounded-lg text-[14px] font-medium flex items-center gap-2 transition-all ${canSubmit ? 'bg-stone-900 hover:bg-stone-800 text-white shadow-sm' : 'bg-stone-200 text-stone-400 cursor-not-allowed'}`}
+          >
+            Approve & authorize payment <Send className="w-4 h-4" />
+          </button>
+        </div>
       </div>
       {!attested && (
         <div className="mt-3 text-right text-[11px] text-stone-500">Check the attestation box to submit</div>
@@ -2544,6 +2737,325 @@ function SuccessPopup({ totals, onClose, onBackToQueue, onTakeBreak }) {
         </div>
       </div>
     </div>
+  );
+}
+
+// ============ CONTRACTOR NEGOTIATION SCREEN ============
+function ContractorNegotiationScreen({ lineItems, setLineItems, totals, onBack, onSubmit }) {
+  const [contractorProposals, setContractorProposals] = useState({});
+  const [negotiationStatus, setNegotiationStatus] = useState('pending');
+  const [selectedLineId, setSelectedLineId] = useState(null);
+  const [showAutoApproval, setShowAutoApproval] = useState(false);
+
+  // Generate contractor proposals (simulated)
+  useEffect(() => {
+    const proposals = {};
+    lineItems.forEach((item, index) => {
+      if (item.status !== 'rejected') {
+        // Simulate contractor counter-proposals with some variance
+        const variance = Math.random() * 0.2 - 0.1; // -10% to +10%
+        const shouldCounter = Math.random() > 0.6; // 40% chance to counter
+
+        proposals[item.id] = {
+          accepted: !shouldCounter,
+          originalPrice: item.unitPrice,
+          proposedPrice: shouldCounter ? item.unitPrice * (1 + variance) : item.unitPrice,
+          originalQty: item.qty,
+          proposedQty: item.qty,
+          reason: shouldCounter ?
+            variance > 0 ?
+              'Current material costs higher in SF market' :
+              'Can source materials at lower cost through preferred vendor'
+            : null,
+          variance: variance
+        };
+      }
+    });
+    setContractorProposals(proposals);
+  }, [lineItems]);
+
+  const calculateNegotiationStats = () => {
+    const proposals = Object.values(contractorProposals);
+    const accepted = proposals.filter(p => p.accepted).length;
+    const countered = proposals.filter(p => !p.accepted).length;
+    const avgVariance = proposals.filter(p => !p.accepted).reduce((sum, p) => sum + Math.abs(p.variance), 0) / (countered || 1);
+
+    return { accepted, countered, avgVariance: (avgVariance * 100).toFixed(1) };
+  };
+
+  const stats = calculateNegotiationStats();
+
+  const handleAutoNegotiate = () => {
+    // Auto-approve items within 10% variance
+    const updated = { ...contractorProposals };
+    Object.keys(updated).forEach(id => {
+      if (Math.abs(updated[id].variance) <= 0.1) {
+        updated[id].accepted = true;
+        updated[id].finalPrice = (updated[id].originalPrice + updated[id].proposedPrice) / 2;
+      }
+    });
+    setContractorProposals(updated);
+    setShowAutoApproval(true);
+    setTimeout(() => setShowAutoApproval(false), 3000);
+  };
+
+  return (
+    <main className="min-h-screen bg-stone-50">
+      {/* Header */}
+      <div className="bg-white border-b border-stone-200">
+        <div className="max-w-[1600px] mx-auto px-6 py-4">
+          <button onClick={onBack} className="flex items-center gap-2 text-stone-600 hover:text-stone-900 text-[13px] mb-4">
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to approval
+          </button>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">CONTRACTOR NEGOTIATION</div>
+              <h1 className="font-display text-3xl text-stone-900 mt-1">Three-Way Scope Review</h1>
+              <p className="text-stone-500 mt-2 text-[14px]">
+                Comparing AI-generated scope with contractor proposal for {CLAIM.address}
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">Contractor</div>
+              <div className="text-lg font-medium text-stone-900">Bay Area Construction LLC</div>
+              <div className="text-sm text-emerald-700">✓ Preferred Network</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Bar */}
+      <div className="bg-white border-b border-stone-200">
+        <div className="max-w-[1600px] mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-8">
+              <div>
+                <span className="text-[11px] uppercase tracking-wider text-stone-500">Items Accepted</span>
+                <div className="text-xl font-semibold text-emerald-700">{stats.accepted}/{lineItems.length}</div>
+              </div>
+              <div>
+                <span className="text-[11px] uppercase tracking-wider text-stone-500">Counter-Proposals</span>
+                <div className="text-xl font-semibold text-amber-700">{stats.countered}</div>
+              </div>
+              <div>
+                <span className="text-[11px] uppercase tracking-wider text-stone-500">Avg Variance</span>
+                <div className="text-xl font-semibold text-stone-900">{stats.avgVariance}%</div>
+              </div>
+            </div>
+            <button
+              onClick={handleAutoNegotiate}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              Auto-Negotiate Minor Variances
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Three-Column Layout */}
+      <div className="max-w-[1600px] mx-auto px-6 py-6">
+        <div className="grid grid-cols-3 gap-4">
+          {/* AI Scope Column */}
+          <div className="bg-white rounded-lg border border-stone-200">
+            <div className="p-4 border-b border-stone-200 bg-gradient-to-r from-blue-50 to-blue-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-blue-700" />
+                  <span className="text-sm font-semibold text-blue-900">AI-Generated Scope</span>
+                </div>
+                <span className="text-xs text-blue-700 font-medium">Original</span>
+              </div>
+              <div className="text-xl font-semibold text-blue-900 mt-2">{fmt(totals.total)}</div>
+            </div>
+            <div className="divide-y divide-stone-100 max-h-[600px] overflow-y-auto">
+              {lineItems.filter(item => item.status !== 'rejected').map((item) => (
+                <div
+                  key={item.id}
+                  className={`p-4 cursor-pointer hover:bg-stone-50 ${selectedLineId === item.id ? 'bg-blue-50' : ''}`}
+                  onClick={() => setSelectedLineId(item.id)}
+                >
+                  <div className="text-xs font-mono text-stone-500 mb-1">{item.code}</div>
+                  <div className="text-sm text-stone-900 font-medium mb-2">{item.description}</div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-stone-600">{item.qty} {item.unit}</span>
+                    <span className="text-sm font-semibold text-stone-900">{fmt(item.qty * item.unitPrice)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Contractor Proposal Column */}
+          <div className="bg-white rounded-lg border border-stone-200">
+            <div className="p-4 border-b border-stone-200 bg-gradient-to-r from-amber-50 to-orange-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <HardHat className="w-4 h-4 text-amber-700" />
+                  <span className="text-sm font-semibold text-amber-900">Contractor Proposal</span>
+                </div>
+                <span className="text-xs text-amber-700 font-medium">Counter</span>
+              </div>
+              <div className="text-xl font-semibold text-amber-900 mt-2">
+                {fmt(lineItems.reduce((sum, item) => {
+                  const proposal = contractorProposals[item.id];
+                  if (!proposal) return sum;
+                  return sum + (item.qty * proposal.proposedPrice);
+                }, 0))}
+              </div>
+            </div>
+            <div className="divide-y divide-stone-100 max-h-[600px] overflow-y-auto">
+              {lineItems.filter(item => item.status !== 'rejected').map((item) => {
+                const proposal = contractorProposals[item.id];
+                if (!proposal) return null;
+
+                return (
+                  <div
+                    key={item.id}
+                    className={`p-4 cursor-pointer hover:bg-stone-50 ${selectedLineId === item.id ? 'bg-amber-50' : ''}`}
+                    onClick={() => setSelectedLineId(item.id)}
+                  >
+                    <div className="text-xs font-mono text-stone-500 mb-1">{item.code}</div>
+                    <div className="text-sm text-stone-900 font-medium mb-2">{item.description}</div>
+
+                    {proposal.accepted ? (
+                      <div className="flex items-center gap-2 text-emerald-700 text-xs font-medium mb-2">
+                        <Check className="w-3 h-3" />
+                        Accepts AI pricing
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-stone-600">{proposal.proposedQty} {item.unit}</span>
+                          <span className="text-sm font-semibold text-amber-900">
+                            {fmt(proposal.proposedQty * proposal.proposedPrice)}
+                          </span>
+                        </div>
+                        {proposal.variance !== 0 && (
+                          <div className="text-xs text-amber-700 bg-amber-50 rounded px-2 py-1">
+                            {proposal.variance > 0 ? '+' : ''}{(proposal.variance * 100).toFixed(1)}% • {proposal.reason}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Resolution Column */}
+          <div className="bg-white rounded-lg border border-stone-200">
+            <div className="p-4 border-b border-stone-200 bg-gradient-to-r from-emerald-50 to-green-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                  <span className="text-sm font-semibold text-emerald-900">Final Resolution</span>
+                </div>
+                <span className="text-xs text-emerald-700 font-medium">Agreed</span>
+              </div>
+              <div className="text-xl font-semibold text-emerald-900 mt-2">
+                {fmt(lineItems.reduce((sum, item) => {
+                  const proposal = contractorProposals[item.id];
+                  if (!proposal) return sum;
+                  const finalPrice = proposal.accepted ? proposal.originalPrice :
+                    (proposal.finalPrice || (proposal.originalPrice + proposal.proposedPrice) / 2);
+                  return sum + (item.qty * finalPrice);
+                }, 0))}
+              </div>
+            </div>
+            <div className="divide-y divide-stone-100 max-h-[600px] overflow-y-auto">
+              {lineItems.filter(item => item.status !== 'rejected').map((item) => {
+                const proposal = contractorProposals[item.id];
+                if (!proposal) return null;
+
+                const finalPrice = proposal.accepted ? proposal.originalPrice :
+                  (proposal.finalPrice || (proposal.originalPrice + proposal.proposedPrice) / 2);
+
+                return (
+                  <div
+                    key={item.id}
+                    className={`p-4 cursor-pointer hover:bg-stone-50 ${selectedLineId === item.id ? 'bg-emerald-50' : ''}`}
+                    onClick={() => setSelectedLineId(item.id)}
+                  >
+                    <div className="text-xs font-mono text-stone-500 mb-1">{item.code}</div>
+                    <div className="text-sm text-stone-900 font-medium mb-2">{item.description}</div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-stone-600">{item.qty} {item.unit}</span>
+                        <span className="text-sm font-semibold text-emerald-900">
+                          {fmt(item.qty * finalPrice)}
+                        </span>
+                      </div>
+
+                      {!proposal.accepted && (
+                        <div className="text-xs text-emerald-700 bg-emerald-50 rounded px-2 py-1">
+                          ✓ Negotiated: Split difference
+                        </div>
+                      )}
+
+                      {proposal.accepted && (
+                        <div className="text-xs text-emerald-700 bg-emerald-50 rounded px-2 py-1">
+                          ✓ Agreed: AI pricing accepted
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Auto-Approval Notification */}
+        {showAutoApproval && (
+          <div className="fixed bottom-6 right-6 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slideUp">
+            <CheckCircle2 className="w-5 h-5" />
+            <span className="text-sm font-medium">Auto-approved items within 10% variance</span>
+          </div>
+        )}
+      </div>
+
+      {/* Action Footer */}
+      <div className="sticky bottom-0 bg-white border-t border-stone-200">
+        <div className="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="text-sm text-stone-600">
+            <span className="font-medium text-stone-900">Final negotiated total:</span> {fmt(lineItems.reduce((sum, item) => {
+              const proposal = contractorProposals[item.id];
+              if (!proposal) return sum;
+              const finalPrice = proposal.accepted ? proposal.originalPrice :
+                (proposal.finalPrice || (proposal.originalPrice + proposal.proposedPrice) / 2);
+              return sum + (item.qty * finalPrice);
+            }, 0))}
+            <span className="text-stone-500 ml-2">
+              ({((lineItems.reduce((sum, item) => {
+                const proposal = contractorProposals[item.id];
+                if (!proposal) return sum;
+                const finalPrice = proposal.accepted ? proposal.originalPrice :
+                  (proposal.finalPrice || (proposal.originalPrice + proposal.proposedPrice) / 2);
+                return sum + (item.qty * finalPrice);
+              }, 0) / totals.total - 1) * 100).toFixed(1)}% from original)
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onBack}
+              className="px-4 py-2 text-stone-600 hover:text-stone-900 text-sm font-medium"
+            >
+              Back to review
+            </button>
+            <button
+              onClick={onSubmit}
+              className="px-6 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 flex items-center gap-2"
+            >
+              Approve & Authorize Payment
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
   );
 }
 

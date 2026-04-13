@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import {
   Search, ChevronRight, ChevronDown, Camera, Box, Ruler, FileText,
   CheckCircle2, AlertTriangle, Sparkles, ArrowRight, ArrowLeft,
-  Edit3, Check, X, Shield, Home, Layers, MapPin, Calendar, User,
+  Edit3, Check, X, Shield, Home, Layers, MapPin, Calendar, User, Users,
   Zap, Eye, MoreHorizontal, Send, Clock, FileCheck, Maximize2, Info,
   Hexagon, Activity, TrendingUp, TrendingDown, Building2, CloudHail, Wind, Droplets,
   Brain, HardHat
@@ -96,6 +96,9 @@ const INITIAL_LINE_ITEMS = [
 const DASHBOARD_CLAIMS = [
   { id: 'CLM-2026-04812', address: '2847 Pacific Ave', city: 'San Francisco, CA', loss: 'Hail', date: 'Apr 6', status: 'draft_ready', confidence: 94, total: 18420, clickable: true,
     image: 'https://photos.zillowstatic.com/fp/063e61c4d756c4b0b0b93d8701023db3-cc_ft_1536.webp' },
+  { id: 'CLM-2026-04813', address: '512 Valencia St', city: 'San Francisco, CA', loss: 'Hail', date: 'Apr 6', status: 'contractor_negotiation', confidence: null, total: 21350, clickable: true, isContractorNegotiation: true,
+    image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop',
+    contractorName: 'Bay Area Roofing Co.', variance: 12 },
   { id: 'CLM-2026-04807', address: '1456 Haight St', city: 'San Francisco, CA', loss: 'Wind', date: 'Apr 6', status: 'draft_ready', confidence: 91, total: 12840,
     image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=400&h=300&fit=crop' },
   { id: 'CLM-2026-04803', address: '345 University Ave', city: 'Palo Alto, CA', loss: 'Hail', date: 'Apr 5', status: 'needs_review', confidence: 72, total: 24100,
@@ -243,7 +246,7 @@ export default function HoverClaimsPrototype() {
 
       <TopNav screen={screen} setScreen={setScreen} totals={totals} showGame={showGame} setShowGame={setShowGame} />
 
-      {screen === 'dashboard' && <Dashboard onOpen={() => setScreen('summary')} />}
+      {screen === 'dashboard' && <Dashboard onOpen={(isContractorNegotiation) => setScreen(isContractorNegotiation ? 'negotiation' : 'summary')} />}
       {screen === 'summary' && <Summary onBack={() => setScreen('dashboard')} onReview={() => setScreen('review')} totals={totals} />}
       {screen === 'review' && (
         <ReviewScreen
@@ -273,7 +276,7 @@ export default function HoverClaimsPrototype() {
         />
       )}
       {screen === 'confirmation' && <Confirmation onReset={() => { setScreen('dashboard'); setLineItems(INITIAL_LINE_ITEMS); setAttested(false); }} totals={totals} />}
-      {screen === 'negotiation' && <ContractorNegotiationScreen lineItems={lineItems} setLineItems={setLineItems} totals={totals} onBack={() => setScreen('approve')} onSubmit={() => setScreen('confirmation')} />}
+      {screen === 'negotiation' && <ContractorNegotiationScreen lineItems={lineItems} setLineItems={setLineItems} totals={totals} onBack={() => setScreen('dashboard')} onSubmit={() => setScreen('confirmation')} />}
 
       {editingItem && <EditDrawer item={editingItem} onClose={() => setEditingItem(null)} onSave={handleSaveEdit} />}
       {expandedPhoto && <PhotoLightbox photo={expandedPhoto} onClose={() => setExpandedPhoto(null)} />}
@@ -430,9 +433,14 @@ function Dashboard({ onOpen }) {
     needs_review: 'bg-amber-50 text-amber-700 border-amber-200',
     processing: 'bg-stone-100 text-stone-600 border-stone-200',
     manual: 'bg-stone-100 text-stone-600 border-stone-200',
+    contractor_negotiation: 'bg-purple-50 text-purple-700 border-purple-200',
   };
   const statusLabels = {
-    draft_ready: 'Draft Ready', needs_review: 'Needs Review', processing: 'Processing', manual: 'Manual Only'
+    draft_ready: 'Draft Ready',
+    needs_review: 'Needs Review',
+    processing: 'Processing',
+    manual: 'Manual Only',
+    contractor_negotiation: 'Contractor Review'
   };
 
   return (
@@ -483,7 +491,7 @@ function Dashboard({ onOpen }) {
         {DASHBOARD_CLAIMS.map((c) => (
           <button
             key={c.id}
-            onClick={() => c.clickable && onOpen()}
+            onClick={() => c.clickable && onOpen(c.isContractorNegotiation)}
             disabled={!c.clickable}
             className={`w-full text-left border-b border-gray-50 last:border-0 transition-colors touch-manipulation ${c.clickable ? 'hover:bg-gray-50 active:bg-gray-100 cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
           >
@@ -511,10 +519,17 @@ function Dashboard({ onOpen }) {
                   {c.status === 'draft_ready' && <Sparkles className="w-2.5 h-2.5" />}
                   {c.status === 'needs_review' && <AlertTriangle className="w-2.5 h-2.5" />}
                   {c.status === 'processing' && <Clock className="w-2.5 h-2.5" />}
+                  {c.status === 'contractor_negotiation' && <Users className="w-2.5 h-2.5" />}
                   {statusLabels[c.status]}
                 </span>
                 {c.confidence && (
                   <div className="text-[12px] text-gray-500 mt-1 tabular">{c.confidence}% confidence</div>
+                )}
+                {c.status === 'contractor_negotiation' && c.contractorName && (
+                  <div className="text-[12px] text-gray-500 mt-1">
+                    <span className="text-purple-600 font-medium">{c.contractorName}</span>
+                    <span className="ml-1.5">• {c.variance}% variance</span>
+                  </div>
                 )}
               </div>
               <div className="text-right tabular">
@@ -564,10 +579,17 @@ function Dashboard({ onOpen }) {
                       {c.status === 'draft_ready' && <Sparkles className="w-3 h-3" />}
                       {c.status === 'needs_review' && <AlertTriangle className="w-3 h-3" />}
                       {c.status === 'processing' && <Clock className="w-3 h-3" />}
+                      {c.status === 'contractor_negotiation' && <Users className="w-3 h-3" />}
                       {statusLabels[c.status]}
                     </span>
                     {c.confidence && (
                       <span className="ml-2 text-[12px] text-gray-500 tabular">{c.confidence}% confidence</span>
+                    )}
+                    {c.status === 'contractor_negotiation' && c.contractorName && (
+                      <div className="text-[12px] text-gray-500 mt-1">
+                        <span className="text-purple-600 font-medium">{c.contractorName}</span>
+                        <span className="ml-1.5">• {c.variance}% variance</span>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -2573,13 +2595,6 @@ function ApproveScreen({ totals, lineItems, attested, setAttested, setScreen, on
           Save as draft
         </button>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setScreen('negotiation')}
-            className="px-4 py-3 rounded-lg text-[14px] font-medium flex items-center gap-2 bg-amber-100 hover:bg-amber-200 text-amber-900 transition-all"
-          >
-            <HardHat className="w-4 h-4" />
-            View Contractor Negotiation
-          </button>
           <button
             onClick={onSubmit}
             disabled={!canSubmit}

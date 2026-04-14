@@ -5,7 +5,7 @@ import {
   Edit3, Check, X, Shield, Home, Layers, MapPin, Calendar, User, Users,
   Zap, Eye, MoreHorizontal, Send, Clock, FileCheck, Maximize2, Info,
   Hexagon, Activity, TrendingUp, TrendingDown, Building2, CloudHail, Wind, Droplets,
-  Brain, HardHat
+  Brain, HardHat, Upload
 } from 'lucide-react';
 import House3D from './House3D';
 import House3DAdvanced from './House3DAdvanced';
@@ -66,7 +66,8 @@ const INITIAL_LINE_ITEMS = [
   { id: 8, category: 'Gutters', code: 'GUT 5IN', description: 'R&R Gutter — aluminum, 5"', qty: null, unit: 'LF', unitPrice: 9.85, materialCost: 4.20, laborCost: 5.65, confidence: 58, status: 'needs_review',
     evidence: ['Gutter north — possible damage', 'Gutter east — possible damage'],
     explanation: 'AI detected possible hail damage in 2 photos but could not determine extent. Inspector\'s checklist did not include gutter measurements.',
-    comparables: 8, inspectorNote: 'North gutter run showing 1.5" separation from fascia board at center span (approximately 35 ft mark), likely needs 68 LF replacement. Multiple 1" diameter dents observed at 4-6 ft intervals. East section status unclear from photos but matching 5" K-style profile suggests 74 LF if damaged. Hangers spaced at 32" centers need adjustment to 24" for proper support.' },
+    comparables: 8, inspectorNote: 'North gutter run showing 1.5" separation from fascia board at center span (approximately 35 ft mark), likely needs 68 LF replacement. Multiple 1" diameter dents observed at 4-6 ft intervals. East section status unclear from photos but matching 5" K-style profile suggests 74 LF if damaged. Hangers spaced at 32" centers need adjustment to 24" for proper support.',
+    userUploadedImage: '/Gemini_Generated_Image_s58vvhs58vvhs58v.png' },
   { id: 9, category: 'Gutters', code: 'GUT DS', description: 'R&R Downspout — aluminum', qty: 24, unit: 'LF', unitPrice: 8.40, materialCost: 3.65, laborCost: 4.75, confidence: 87, status: 'pending',
     evidence: ['Downspout north', 'Downspout east'],
     explanation: 'Two downspouts visible with dent damage consistent with hail impact.',
@@ -76,7 +77,8 @@ const INITIAL_LINE_ITEMS = [
   { id: 10, category: 'Fascia', code: 'FCA 1X6', description: 'R&R Fascia board — 1"x6"', qty: 36, unit: 'LF', unitPrice: 6.80, materialCost: 2.85, laborCost: 3.95, confidence: 74, status: 'pending',
     evidence: ['Fascia damage north', 'Fascia damage east'],
     explanation: 'Partial fascia damage identified on north eave. Quantity estimated from visible damage zone in photos; measurement not captured by inspector.',
-    comparables: 6, inspectorNote: 'North eave fascia exhibits impact damage along 36 LF section starting 12 ft from northwest corner. Existing 1x6 cedar fascia (actual 3/4" x 5.5") shows splintering at 5 impact points with maximum penetration depth of 1/4". Board separation from soffit measures 1/8" gap requiring complete replacement to restore weather seal and gutter mounting surface.' },
+    comparables: 6, inspectorNote: 'North eave fascia exhibits impact damage along 36 LF section starting 12 ft from northwest corner. Existing 1x6 cedar fascia (actual 3/4" x 5.5") shows splintering at 5 impact points with maximum penetration depth of 1/4". Board separation from soffit measures 1/8" gap requiring complete replacement to restore weather seal and gutter mounting surface.',
+    userUploadedImage: '/Gemini_Generated_Image_fu7b9pfu7b9pfu7b.png' },
   { id: 11, category: 'Fascia', code: 'PNT FCA', description: 'Paint fascia — 1 coat', qty: 36, unit: 'LF', unitPrice: 2.10, materialCost: 0.65, laborCost: 1.45, confidence: 74, status: 'pending',
     evidence: ['Fascia reference'],
     explanation: 'Paint applied to match fascia replacement quantity.',
@@ -462,10 +464,11 @@ function Dashboard({ onOpen }) {
       </div>
 
       {/* Metric strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6 md:mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6 md:mb-8">
         <MetricCard label="In queue" value="6" delta="+2 today" />
         <MetricCard label="Drafts ready" value="3" accent="emerald" delta="94% avg confidence" />
         <MetricCard label="Need review" value="1" accent="amber" delta="Action required" />
+        <MetricCard label="Claims completed this week" value="84" accent="blue" delta="vs. 72 last week" />
         <MetricCard label="Time saved this week" value="14.2h" accent="emerald" delta="vs. manual baseline" />
       </div>
 
@@ -664,7 +667,7 @@ function MetricCard({ label, value, delta, accent }) {
     <div className="bg-white border border-stone-200 rounded-xl p-4 md:p-5">
       <div className="text-[10px] md:text-[11px] uppercase tracking-wider text-stone-500 font-medium">{label}</div>
       <div className="flex items-baseline gap-2 mt-1.5 md:mt-2">
-        <div className={`font-display text-3xl md:text-4xl leading-none ${accent === 'emerald' ? 'text-emerald-700' : accent === 'amber' ? 'text-amber-700' : 'text-stone-900'}`}>{value}</div>
+        <div className={`font-display text-3xl md:text-4xl leading-none ${accent === 'emerald' ? 'text-emerald-700' : accent === 'amber' ? 'text-amber-700' : accent === 'blue' ? 'text-blue-700' : 'text-stone-900'}`}>{value}</div>
       </div>
       <div className="text-[10px] md:text-[11px] text-stone-500 mt-1.5 md:mt-2">{delta}</div>
     </div>
@@ -1822,6 +1825,7 @@ function NotesView({ item }) {
         <div className="flex items-center gap-2 mb-3">
           <User className="w-3.5 h-3.5 text-stone-500" />
           <span className="text-[12px] text-stone-600">Inspector note — {CLAIM.inspector}</span>
+          <span className="text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded-md font-medium">OCR-generated</span>
           <span className="text-[11px] text-stone-400 ml-auto">{CLAIM.inspectionDate}</span>
         </div>
         <p className="text-[13px] text-stone-900 leading-relaxed">
@@ -1839,6 +1843,29 @@ function NotesView({ item }) {
           <div className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-emerald-600 mt-0.5" /><span className="text-stone-700">Granule loss documented</span></div>
         </div>
       </div>
+      {item.userUploadedImage && (
+        <div className="bg-white rounded-lg border border-stone-200 p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Upload className="w-3.5 h-3.5 text-stone-500" />
+            <span className="text-[12px] text-stone-600">User uploaded</span>
+            <span className="text-[11px] text-stone-400 ml-auto">Added by adjuster</span>
+          </div>
+          <div className="mt-3">
+            <img
+              src={item.userUploadedImage}
+              alt="User uploaded evidence"
+              className="w-full max-w-md h-auto rounded-lg border border-stone-200"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'block';
+              }}
+            />
+            <div className="hidden p-4 bg-stone-50 rounded-lg border border-stone-200 text-center">
+              <div className="text-[13px] text-stone-500">Image not found</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

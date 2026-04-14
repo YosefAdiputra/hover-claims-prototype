@@ -167,6 +167,11 @@ export default function HoverClaimsPrototype() {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showGame, setShowGame] = useState(false);
 
+  // Scroll to top when screen changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [screen]);
+
   const selectedItem = lineItems.find(i => i.id === selectedItemId);
   const totals = useMemo(() => {
     const valid = lineItems.filter(i => i.qty != null && i.status !== 'rejected');

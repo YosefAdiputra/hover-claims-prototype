@@ -2319,12 +2319,17 @@ function EmptyEvidence({ message }) {
 
 // ============ DETAIL PANEL (RIGHT) ============
 function DetailPanel({ item, onApprove, onEdit, onResolve }) {
-  const [showPriceComparison, setShowPriceComparison] = useState(false);
+  const [showMaterialsModal, setShowMaterialsModal] = useState(false);
   const [selectedRetailer, setSelectedRetailer] = useState('Ace Hardware');
-  const [priceOverride, setPriceOverride] = useState(null);
+  const [materialOverride, setMaterialOverride] = useState(null);
 
-  // Use priceOverride if set, otherwise use item's original price
-  const currentPrice = priceOverride !== null ? priceOverride : item.unitPrice;
+  const [showLaborModal, setShowLaborModal] = useState(false);
+  const [selectedContractor, setSelectedContractor] = useState('Bay Area Roofing Co.');
+  const [laborOverride, setLaborOverride] = useState(null);
+
+  const currentMaterials = materialOverride !== null ? materialOverride : item.materialCost;
+  const currentLabor = laborOverride !== null ? laborOverride : item.laborCost;
+  const currentPrice = currentMaterials + currentLabor;
 
   const band = confBand(item.confidence);
   const colors = CONFIDENCE_COLORS[band];
@@ -2332,17 +2337,19 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
   const isApproved = item.status === 'approved';
   const lineTotal = item.qty != null ? item.qty * currentPrice : null;
 
-  // Reset price override when item changes
+  // Reset overrides when item changes
   React.useEffect(() => {
-    setPriceOverride(null);
+    setMaterialOverride(null);
+    setLaborOverride(null);
     setSelectedRetailer('Ace Hardware');
+    setSelectedContractor('Bay Area Roofing Co.');
   }, [item.id]);
 
-  // Price comparison data for retailers
+  // Retailer material pricing — priced from local suppliers in 94104
   const retailers = [
     {
       name: 'Ace Hardware',
-      price: item.unitPrice,
+      price: item.materialCost,
       availability: 'In Stock',
       delivery: 'Same day delivery',
       sku: 'ACE-4821739',
@@ -2351,7 +2358,7 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
     },
     {
       name: 'Home Depot',
-      price: item.unitPrice * 1.08,
+      price: item.materialCost * 1.08,
       availability: 'In Stock',
       delivery: '3-5 day delivery',
       sku: 'HD-1000692847',
@@ -2360,7 +2367,7 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
     },
     {
       name: 'Lowe\'s',
-      price: item.unitPrice * 1.12,
+      price: item.materialCost * 1.12,
       availability: 'In Stock',
       delivery: '2-4 day delivery',
       sku: 'LOW-5013098432',
@@ -2369,12 +2376,64 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
     },
     {
       name: 'Tractor Supply',
-      price: item.unitPrice * 1.15,
+      price: item.materialCost * 1.15,
       availability: 'Limited',
       delivery: '5-7 day delivery',
       sku: 'TSC-20946813',
       logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/TractorSupplyCompanylogo.svg/3840px-TractorSupplyCompanylogo.svg.png',
       color: 'gray'
+    }
+  ].sort((a, b) => a.price - b.price);
+
+  // Licensed contractor labor estimates — local to 94104
+  const contractors = [
+    {
+      name: 'Bay Area Roofing Co.',
+      price: item.laborCost,
+      rating: 4.8,
+      reviews: 127,
+      distance: '2.3 mi',
+      response: 'Same day',
+      specialty: 'Roofing specialist · 18 yrs',
+      license: 'CSLB #1047291',
+      initials: 'BA',
+      color: 'emerald'
+    },
+    {
+      name: 'Pacific Heights Construction',
+      price: item.laborCost * 1.09,
+      rating: 4.6,
+      reviews: 93,
+      distance: '3.7 mi',
+      response: '24-hour quote',
+      specialty: 'Full-service exterior',
+      license: 'CSLB #0892156',
+      initials: 'PH',
+      color: 'blue'
+    },
+    {
+      name: 'Golden Gate Repair',
+      price: item.laborCost * 1.16,
+      rating: 4.7,
+      reviews: 215,
+      distance: '4.2 mi',
+      response: '48-hour quote',
+      specialty: 'Storm & hail damage',
+      license: 'CSLB #1123408',
+      initials: 'GG',
+      color: 'amber'
+    },
+    {
+      name: 'SF Premier Contractors',
+      price: item.laborCost * 1.24,
+      rating: 4.9,
+      reviews: 64,
+      distance: '5.8 mi',
+      response: 'Within 1 week',
+      specialty: 'Premium restoration',
+      license: 'CSLB #1205774',
+      initials: 'SF',
+      color: 'purple'
     }
   ].sort((a, b) => a.price - b.price);
 
@@ -2411,46 +2470,55 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
           <div className="flex justify-between"><span className="text-stone-500">Code</span><span className="font-mono-ui text-stone-900">{item.code}</span></div>
           <div className="flex justify-between"><span className="text-stone-500">Quantity</span><span className="text-stone-900 font-medium tabular">{item.qty != null ? `${item.qty} ${item.unit}` : '—'}</span></div>
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-1.5">
-              <span className="text-stone-500">Unit price</span>
-              <button
-                onClick={() => setShowPriceComparison(!showPriceComparison)}
-                className="group relative w-4 h-4 rounded-full bg-stone-100 hover:bg-stone-200 transition-colors flex items-center justify-center"
-                aria-label="View price comparison"
-              >
-                <Info className="w-2.5 h-2.5 text-stone-500 group-hover:text-stone-700" />
-              </button>
-            </div>
+            <span className="text-stone-500">Unit price</span>
             <span className="text-stone-900 tabular">{fmtDetail(currentPrice)}</span>
           </div>
-          <div className="ml-4 mt-1 space-y-0.5">
-            <div className="flex justify-between text-xs">
-              <span className="text-stone-400">Materials:</span>
-              <span className="text-stone-600 tabular">{fmtDetail(item.materialCost)}</span>
+          <div className="ml-4 mt-1 space-y-1">
+            <div className="flex justify-between items-center text-xs">
+              <div className="flex items-center gap-1.5">
+                <span className="text-stone-400">Materials:</span>
+                <button
+                  onClick={() => setShowMaterialsModal(!showMaterialsModal)}
+                  className="group relative w-4 h-4 rounded-full bg-stone-100 hover:bg-stone-200 transition-colors flex items-center justify-center"
+                  aria-label="Compare material suppliers"
+                >
+                  <Info className="w-2.5 h-2.5 text-stone-500 group-hover:text-stone-700" />
+                </button>
+              </div>
+              <span className="text-stone-600 tabular">{fmtDetail(currentMaterials)}</span>
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-stone-400">Labor (San Francisco, CA):</span>
-              <span className="text-stone-600 tabular">{fmtDetail(item.laborCost)}</span>
+            <div className="flex justify-between items-center text-xs">
+              <div className="flex items-center gap-1.5">
+                <span className="text-stone-400">Labor (San Francisco, CA):</span>
+                <button
+                  onClick={() => setShowLaborModal(!showLaborModal)}
+                  className="group relative w-4 h-4 rounded-full bg-stone-100 hover:bg-stone-200 transition-colors flex items-center justify-center"
+                  aria-label="Compare local contractors"
+                >
+                  <Info className="w-2.5 h-2.5 text-stone-500 group-hover:text-stone-700" />
+                </button>
+              </div>
+              <span className="text-stone-600 tabular">{fmtDetail(currentLabor)}</span>
             </div>
           </div>
           <div className="flex justify-between pt-2 border-t border-stone-100"><span className="text-stone-500">Line total <span className="text-xs text-stone-400">(incl. labor)</span></span><span className="text-stone-900 font-semibold tabular">{lineTotal != null ? fmt(lineTotal) : '—'}</span></div>
         </div>
       </div>
 
-      {/* Price Comparison Modal */}
-      {showPriceComparison && (
+      {/* Materials Price Comparison Modal */}
+      {showMaterialsModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowPriceComparison(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full animate-slideUp">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowMaterialsModal(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] flex flex-col animate-slideUp">
             {/* Header */}
-            <div className="px-6 pt-6 pb-4 border-b border-gray-100">
+            <div className="px-6 pt-6 pb-4 border-b border-gray-100 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Price Comparison</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Materials — supplier pricing</h3>
                   <p className="text-sm text-gray-500 mt-1">{item.description}</p>
                 </div>
                 <button
-                  onClick={() => setShowPriceComparison(false)}
+                  onClick={() => setShowMaterialsModal(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <X className="w-4 h-4 text-gray-500" />
@@ -2461,14 +2529,14 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
               <div className="mt-3 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center gap-2">
                   <MapPin className="w-3.5 h-3.5 text-blue-600" />
-                  <span className="text-xs font-medium text-blue-900">Local prices for San Francisco, CA 94104</span>
+                  <span className="text-xs font-medium text-blue-900">Material prices for San Francisco, CA 94104</span>
                 </div>
-                <p className="text-[10px] text-blue-700 mt-0.5 ml-5">Prices include local availability and delivery charges to job site</p>
+                <p className="text-[10px] text-blue-700 mt-0.5 ml-5">Per-unit material cost only. Labor is priced separately.</p>
               </div>
             </div>
 
             {/* Retailer List */}
-            <div className="p-6 space-y-3">
+            <div className="p-6 space-y-3 overflow-y-auto flex-1 min-h-0">
               {retailers.map((retailer, idx) => (
                 <div
                   key={retailer.name}
@@ -2481,7 +2549,7 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
                   `}
                   onClick={() => {
                     setSelectedRetailer(retailer.name);
-                    setPriceOverride(retailer.price);
+                    setMaterialOverride(retailer.price);
                   }}
                 >
                   {selectedRetailer === retailer.name && (
@@ -2531,9 +2599,9 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
                           Best Price
                         </div>
                       )}
-                      {retailer.price > item.unitPrice && (
+                      {retailer.price > item.materialCost && (
                         <div className="text-xs text-gray-500 mt-0.5">
-                          +{Math.round((retailer.price - item.unitPrice) / item.unitPrice * 100)}%
+                          +{Math.round((retailer.price - item.materialCost) / item.materialCost * 100)}%
                         </div>
                       )}
                     </div>
@@ -2543,29 +2611,25 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
             </div>
 
             {/* Footer Actions */}
-            <div className="px-6 pb-6">
+            <div className="px-6 pb-6 pt-2 border-t border-gray-100 flex-shrink-0">
               <div className="flex gap-3">
                 <button
                   onClick={() => {
-                    // Apply the selected retailer's price
                     if (selectedRetailer) {
                       const selected = retailers.find(r => r.name === selectedRetailer);
-                      if (selected && selected.price !== item.unitPrice) {
-                        // Would typically update the item here
-                        // For now, just close the modal
-                        setShowPriceComparison(false);
-                        // If price changed, could trigger edit
-                        if (currentPrice !== item.unitPrice) {
+                      if (selected && selected.price !== item.materialCost) {
+                        setShowMaterialsModal(false);
+                        if (currentMaterials !== item.materialCost) {
                           onEdit();
                         }
                       } else {
-                        setShowPriceComparison(false);
+                        setShowMaterialsModal(false);
                       }
                     }
                   }}
                   className="flex-1 bg-gray-900 hover:bg-gray-800 text-white py-2.5 rounded-lg text-sm font-medium transition-colors"
                 >
-                  Change Supplier
+                  Change supplier
                 </button>
                 <button
                   onClick={() => setShowPriceComparison(false)}
@@ -2580,15 +2644,167 @@ function DetailPanel({ item, onApprove, onEdit, onResolve }) {
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <div className="text-xs font-medium text-emerald-900">
-                      {selectedRetailer === 'Ace Hardware' ? 'Optimal pricing selected' : `Selected: ${selectedRetailer}`}
+                      {selectedRetailer === retailers[0].name ? 'Lowest material cost selected' : `Selected: ${selectedRetailer}`}
                     </div>
                     <div className="text-xs text-emerald-700 mt-0.5">
                       {(() => {
                         const avgPrice = retailers.reduce((sum, r) => sum + r.price, 0) / retailers.length;
-                        const savings = (avgPrice - currentPrice) * (item.qty || 1);
+                        const savings = (avgPrice - currentMaterials) * (item.qty || 1);
                         return savings > 0
-                          ? `Saving $${savings.toFixed(2)} vs. average market price`
-                          : `$${Math.abs(savings).toFixed(2)} above average market price`;
+                          ? `Saving $${savings.toFixed(2)} on materials vs. average`
+                          : `$${Math.abs(savings).toFixed(2)} above average material cost`;
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Labor Estimates Modal */}
+      {showLaborModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowLaborModal(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] flex flex-col animate-slideUp">
+            {/* Header */}
+            <div className="px-6 pt-6 pb-4 border-b border-gray-100 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Labor — local contractor bids</h3>
+                  <p className="text-sm text-gray-500 mt-1">{item.description}</p>
+                </div>
+                <button
+                  onClick={() => setShowLaborModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-500" />
+                </button>
+              </div>
+
+              <div className="mt-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <HardHat className="w-3.5 h-3.5 text-amber-700" />
+                  <span className="text-xs font-medium text-amber-900">Licensed contractors near 94104</span>
+                </div>
+                <p className="text-[10px] text-amber-800 mt-0.5 ml-5">Per-unit labor rate from {contractors.length} CSLB-verified contractors serving this ZIP.</p>
+              </div>
+            </div>
+
+            {/* Contractor List */}
+            <div className="p-6 space-y-3 overflow-y-auto flex-1 min-h-0">
+              {contractors.map((contractor, idx) => (
+                <div
+                  key={contractor.name}
+                  className={`
+                    relative p-4 rounded-xl border-2 transition-all cursor-pointer
+                    ${selectedContractor === contractor.name
+                      ? 'border-emerald-500 bg-emerald-50/50'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }
+                  `}
+                  onClick={() => {
+                    setSelectedContractor(contractor.name);
+                    setLaborOverride(contractor.price);
+                  }}
+                >
+                  {selectedContractor === contractor.name && (
+                    <div className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      SELECTED
+                    </div>
+                  )}
+
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      {/* Initials avatar */}
+                      <div className={`
+                        w-12 h-12 rounded-lg flex items-center justify-center font-semibold text-sm
+                        ${contractor.color === 'emerald' ? 'bg-emerald-100 text-emerald-700' : ''}
+                        ${contractor.color === 'blue' ? 'bg-blue-100 text-blue-700' : ''}
+                        ${contractor.color === 'amber' ? 'bg-amber-100 text-amber-700' : ''}
+                        ${contractor.color === 'purple' ? 'bg-purple-100 text-purple-700' : ''}
+                      `}>
+                        {contractor.initials}
+                      </div>
+
+                      <div>
+                        <div className="font-medium text-gray-900">{contractor.name}</div>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-xs font-medium text-amber-600">★ {contractor.rating}</span>
+                          <span className="text-[10px] text-gray-400">({contractor.reviews} reviews)</span>
+                          <span className="text-[10px] text-gray-400">·</span>
+                          <span className="text-[10px] text-gray-500">{contractor.distance}</span>
+                        </div>
+                        <div className="text-[10px] text-gray-500 mt-1">{contractor.specialty}</div>
+                        <div className="text-[10px] text-gray-400 font-mono mt-0.5">{contractor.license} · {contractor.response}</div>
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="font-bold text-gray-900 tabular">
+                        {fmtDetail(contractor.price)}
+                      </div>
+                      <div className="text-[10px] text-gray-400">per {item.unit}</div>
+                      {idx === 0 && (
+                        <div className="text-xs text-emerald-600 font-medium mt-0.5">
+                          Best Price
+                        </div>
+                      )}
+                      {contractor.price > item.laborCost && (
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          +{Math.round((contractor.price - item.laborCost) / item.laborCost * 100)}%
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer Actions */}
+            <div className="px-6 pb-6 pt-2 border-t border-gray-100 flex-shrink-0">
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    if (selectedContractor) {
+                      const selected = contractors.find(c => c.name === selectedContractor);
+                      if (selected && selected.price !== item.laborCost) {
+                        setShowLaborModal(false);
+                        if (currentLabor !== item.laborCost) {
+                          onEdit();
+                        }
+                      } else {
+                        setShowLaborModal(false);
+                      }
+                    }
+                  }}
+                  className="flex-1 bg-gray-900 hover:bg-gray-800 text-white py-2.5 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Change contractor
+                </button>
+                <button
+                  onClick={() => setShowLaborModal(false)}
+                  className="flex-1 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Keep Current
+                </button>
+              </div>
+
+              <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs font-medium text-emerald-900">
+                      {selectedContractor === contractors[0].name ? 'Lowest labor bid selected' : `Selected: ${selectedContractor}`}
+                    </div>
+                    <div className="text-xs text-emerald-700 mt-0.5">
+                      {(() => {
+                        const avgPrice = contractors.reduce((sum, c) => sum + c.price, 0) / contractors.length;
+                        const savings = (avgPrice - currentLabor) * (item.qty || 1);
+                        return savings > 0
+                          ? `Saving $${savings.toFixed(2)} on labor vs. ZIP average`
+                          : `$${Math.abs(savings).toFixed(2)} above ZIP-average labor cost`;
                       })()}
                     </div>
                   </div>

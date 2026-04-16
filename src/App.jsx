@@ -1132,29 +1132,32 @@ function Summary({ onBack, onReview, totals }) {
   const claimImage = DASHBOARD_CLAIMS.find(c => c.id === CLAIM.id)?.image;
 
   return (
-    <main className="max-w-[1440px] mx-auto px-6 py-8 bg-[#F5F5F7] min-h-screen">
-      <button onClick={onBack} className="flex items-center gap-2 text-[15px] text-[#86868B] hover:text-[#1D1D1F] mb-8 transition-colors touch-manipulation font-medium">
-        <ArrowLeft className="w-4 h-4" /> Back to queue
+    <main className="max-w-[1440px] mx-auto px-6 py-4 bg-[#F5F5F7]">
+      <button onClick={onBack} className="flex items-center gap-2 text-[13px] text-[#86868B] hover:text-[#1D1D1F] mb-3 transition-colors touch-manipulation font-medium">
+        <ArrowLeft className="w-3.5 h-3.5" /> Back to queue
       </button>
 
-      {/* Header Section */}
-      <div className="mb-8">
-        <h1 className="text-5xl md:text-6xl font-semibold text-[#1D1D1F] leading-tight tracking-tight mb-3">{CLAIM.address}</h1>
-        <div className="flex items-center gap-4 text-[15px] text-[#86868B]">
-          <span>{CLAIM.city}</span>
-          <span>•</span>
-          <span className="font-mono text-[14px]">{CLAIM.id}</span>
+      {/* Header Section — compact */}
+      <div className="mb-4 flex items-end justify-between gap-6 flex-wrap">
+        <div>
+          <h1 className="text-3xl md:text-[40px] font-semibold text-[#1D1D1F] leading-tight tracking-tight">{CLAIM.address}</h1>
+          <div className="flex items-center gap-3 text-[13px] text-[#86868B] mt-1">
+            <span>{CLAIM.city}</span>
+            <span>•</span>
+            <span className="font-mono text-[12px]">{CLAIM.id}</span>
+            <span>•</span>
+            <span>{CLAIM.carrier}</span>
+          </div>
         </div>
       </div>
 
       {/* 12-Column Grid Layout */}
-      <div className="grid grid-cols-12 gap-8">
-        {/* Main Content (Columns 1-8): Property Hero & Dossier */}
+      <div className="grid grid-cols-12 gap-5">
+        {/* Main Content: Property Hero & Dossier */}
         <div className="col-span-12 lg:col-span-8">
-          {/* Property Hero with Integrated Dossier */}
-          <div className="relative group shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-[20px] overflow-hidden bg-white">
-            {/* Wide Aspect Hero Image */}
-            <div className="aspect-[21/9] relative overflow-hidden bg-gradient-to-br from-black/5 to-black/10">
+          <div className="relative group shadow-[0_4px_24px_rgba(0,0,0,0.04)] rounded-[16px] overflow-hidden bg-white">
+            {/* Hero image — shorter aspect */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-black/5 to-black/10 h-[240px] md:h-[260px]">
               {claimImage ? (
                 <img
                   src={claimImage}
@@ -1165,146 +1168,94 @@ function Summary({ onBack, onReview, totals }) {
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <div className="text-center">
-                    <Home className="w-12 h-12 text-[#86868B] mx-auto mb-3" />
-                    <div className="text-[#86868B] font-medium">Property Image</div>
+                    <Home className="w-10 h-10 text-[#86868B] mx-auto mb-2" />
+                    <div className="text-[#86868B] font-medium text-[13px]">Property Image</div>
                   </div>
                 </div>
               )}
-              {/* Glassmorphism Overlay Button */}
-              <div className="absolute bottom-4 right-4 backdrop-blur-md bg-white/20 rounded-[12px] border border-white/30 px-4 py-2 text-white font-medium text-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                View 84 Photos
+              <div className="absolute bottom-3 right-3 backdrop-blur-md bg-black/40 rounded-lg border border-white/20 px-3 py-1.5 text-white font-medium text-[12px]">
+                84 photos • 3D model
               </div>
             </div>
 
-            {/* Integrated Property Dossier - No Gap */}
-            <div className="bg-[#F5F5F7] p-6 border-t border-gray-100">
-              <h3 className="text-[14px] font-semibold text-[#1D1D1F] mb-4 uppercase tracking-wide">Property Dossier</h3>
-              <div className="grid grid-cols-3 gap-x-6 gap-y-4">
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">YEAR BUILT</span>
-                  <span className="text-[14px] font-medium text-[#1D1D1F]">{CLAIM.yearBuilt}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">INSPECTOR</span>
-                  <span className="text-[14px] font-medium text-[#1D1D1F]">{CLAIM.inspector}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">SQUARE FOOTAGE</span>
-                  <span className="text-[14px] font-medium text-[#1D1D1F]">{CLAIM.squareFootage.toLocaleString()} sf</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">INSPECTION DATE</span>
-                  <span className="text-[14px] font-medium text-[#1D1D1F]">{CLAIM.inspectionDate}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">ROOF MATERIAL</span>
-                  <span className="text-[14px] font-medium text-[#1D1D1F]">{CLAIM.roofMaterial}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">PHOTOS</span>
-                  <span className="text-[14px] font-medium text-[#1D1D1F]">{CLAIM.photoCount}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">POLICY NUMBER</span>
-                  <span className="text-[12px] font-mono text-[#1D1D1F]">{CLAIM.policyNumber}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-bold text-[#86868B] tracking-wider mb-1">MEASUREMENTS</span>
-                  <span className="text-[14px] font-medium text-[#1D1D1F]">{CLAIM.measurementCount}</span>
-                </div>
+            {/* Compact dossier */}
+            <div className="bg-[#F5F5F7] px-5 py-4 border-t border-gray-100">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[11px] font-semibold text-[#1D1D1F] uppercase tracking-wide">Property Dossier</h3>
+                <span className="text-[11px] text-[#86868B]">{CLAIM.photoCount} photos • {CLAIM.measurementCount} measurements</span>
+              </div>
+              <div className="grid grid-cols-4 gap-x-5 gap-y-3">
+                <DossierField label="Year built" value={CLAIM.yearBuilt} />
+                <DossierField label="Sq footage" value={`${CLAIM.squareFootage.toLocaleString()} sf`} />
+                <DossierField label="Roof material" value={CLAIM.roofMaterial} />
+                <DossierField label="Inspector" value={CLAIM.inspector} />
+                <DossierField label="Inspected" value={CLAIM.inspectionDate} />
+                <DossierField label="Loss date" value={CLAIM.lossDate} />
+                <DossierField label="Loss type" value={CLAIM.lossType} />
+                <DossierField label="Policy #" value={CLAIM.policyNumber} mono />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Control Center (Columns 9-12): Sticky AI Intelligence & Actions */}
-        <div className="col-span-12 lg:col-span-4 lg:sticky lg:top-8 lg:self-start">
-          {/* Unified Control Center - One Continuous Slab */}
-          <div className="bg-white rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.04)] overflow-hidden">
+        {/* Control Center */}
+        <div className="col-span-12 lg:col-span-4">
+          <div className="bg-white rounded-[16px] shadow-[0_4px_24px_rgba(0,0,0,0.04)] overflow-hidden">
 
-            {/* Price Hero */}
-            <div className="p-6 text-center border-b border-gray-100">
-              <div className="text-[12px] uppercase tracking-wider text-[#86868B] font-medium mb-2">Total Repair Estimate</div>
-              <div className="text-[48px] font-semibold text-[#1D1D1F] leading-none tracking-tight mb-1">{fmt(totals.total)}</div>
-              <div className="text-[14px] text-[#86868B] mb-3">Including materials + local San Francisco, CA labor</div>
-              <div className="relative inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-full text-emerald-600 font-medium text-[13px] mb-2 cursor-help group">
-                <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full"></span>
-                94% Confident
-
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                  <div className="font-medium mb-1">AI Confidence Levels:</div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                      <span>≥90% - High confidence</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
-                      <span>≥80% - Medium confidence</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                      <span>&lt;80% - Low confidence</span>
-                    </div>
-                  </div>
-                  <div className="text-xs text-gray-300 mt-2 border-t border-gray-700 pt-1">
-                    Based on AI analysis of photos, measurements, and damage patterns
-                  </div>
-                  {/* Arrow */}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+            {/* Price Hero — compact */}
+            <div className="p-5 text-center border-b border-gray-100">
+              <div className="text-[10.5px] uppercase tracking-wider text-[#86868B] font-medium mb-1.5">Total Repair Estimate</div>
+              <div className="text-[36px] font-semibold text-[#1D1D1F] leading-none tracking-tight">{fmt(totals.total)}</div>
+              <div className="text-[12px] text-[#86868B] mt-1.5">Materials + local labor</div>
+              <div className="mt-3 flex items-center justify-center gap-2">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 rounded-full text-emerald-700 font-medium text-[11.5px]">
+                  <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full"></span>
+                  94% confident
                 </div>
+                <span className="text-[11.5px] text-[#86868B]">{totals.count} items • {totals.needsReview > 0 ? `${totals.needsReview} need review` : 'all verified'}</span>
               </div>
-              <div className="text-[14px] text-[#86868B]">{totals.count} line items • {totals.needsReview > 0 ? `${totals.needsReview} need review` : 'All items verified'}</div>
             </div>
 
-            {/* AI Summary */}
-            <div className="p-6 border-b border-gray-100">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-7 h-7 rounded-full bg-[#0071E3]/10 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-[#0071E3]" />
-                </div>
-                <span className="text-[16px] font-semibold text-[#1D1D1F]">AI Summary</span>
+            {/* AI Summary — compact */}
+            <div className="px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-3.5 h-3.5 text-[#0071E3]" />
+                <span className="text-[12px] font-semibold text-[#1D1D1F] uppercase tracking-wide">AI Summary</span>
+                <span className="ml-auto text-[10.5px] text-[#86868B] flex items-center gap-1"><Clock className="w-3 h-3" />2.4s</span>
               </div>
-              <p className="text-[14px] text-[#1D1D1F] leading-relaxed mb-4">
-                Automated inspection analysis identified significant hail damage across 24.5 squares of roofing on the north and east-facing slopes. Damage density exceeds carrier replacement thresholds with consistent impact patterns and granule loss.
+              <p className="text-[12.5px] text-[#1D1D1F] leading-relaxed">
+                Identified hail damage across 24.5 squares on north and east slopes. Damage density exceeds carrier thresholds with consistent impact patterns and granule loss.
               </p>
-              <div className="flex items-center gap-2 text-[13px] text-[#86868B]">
-                <Clock className="w-4 h-4" />
-                <span>Analysis completed in 2.4 seconds</span>
-              </div>
             </div>
 
-            {/* Action Group - Status & Button */}
-            <div className="p-6">
-              {/* Status Indicators */}
-              <div className="space-y-3 mb-6">
+            {/* Action Group */}
+            <div className="p-5">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-4 text-[12px]">
                 {totals.needsReview > 0 && (
-                  <div className="flex items-center gap-3">
-                    <AlertTriangle className="w-4 h-4 text-[#FF9F0A]" />
-                    <span className="text-[14px] text-[#FF9F0A] font-medium">{totals.needsReview} item needs attention</span>
+                  <div className="flex items-center gap-1.5 text-[#FF9F0A] font-medium">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>{totals.needsReview} flagged</span>
                   </div>
                 )}
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-4 h-4 text-[#34C759]" />
-                  <span className="text-[14px] font-medium text-[#1D1D1F]">Ready for Review</span>
+                <div className="flex items-center gap-1.5 text-[#1D1D1F]">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#34C759]" />
+                  <span>Ready for review</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <FileCheck className="w-4 h-4 text-[#86868B]" />
-                  <span className="text-[14px] text-[#86868B]">Ready for Xactimate import</span>
+                <div className="flex items-center gap-1.5 text-[#86868B]">
+                  <FileCheck className="w-3.5 h-3.5" />
+                  <span>Xactimate-ready</span>
                 </div>
               </div>
 
-              {/* Primary Action Button */}
               <button
                 onClick={onReview}
-                className="w-full bg-[#0071E3] hover:brightness-110 text-white px-6 py-4 rounded-[12px] text-[16px] font-semibold flex items-center justify-center gap-3 transition-all touch-manipulation shadow-sm"
+                className="w-full bg-[#0071E3] hover:brightness-110 text-white px-5 py-3 rounded-[10px] text-[14px] font-semibold flex items-center justify-center gap-2 transition-all touch-manipulation shadow-sm"
               >
                 Review AI Draft Scope
                 <ArrowRight className="w-4 h-4" />
               </button>
-              <div className="text-center text-[13px] text-[#86868B] mt-3">
-                Estimated review time: 3-5 minutes
+              <div className="text-center text-[11.5px] text-[#86868B] mt-2">
+                Est. review time: 3–5 min
               </div>
             </div>
 
@@ -1312,6 +1263,15 @@ function Summary({ onBack, onReview, totals }) {
         </div>
       </div>
     </main>
+  );
+}
+
+function DossierField({ label, value, mono }) {
+  return (
+    <div className="flex flex-col min-w-0">
+      <span className="text-[9.5px] uppercase font-semibold text-[#86868B] tracking-wider mb-0.5">{label}</span>
+      <span className={`${mono ? 'font-mono text-[11.5px]' : 'text-[13px]'} font-medium text-[#1D1D1F] truncate`}>{value}</span>
+    </div>
   );
 }
 
@@ -3182,76 +3142,81 @@ function Confirmation({ onReset, totals }) {
 // ============ SUCCESS POPUP ============
 function SuccessPopup({ totals, onClose, onBackToQueue, onTakeBreak }) {
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[24px] shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="p-6 pb-4 text-center">
-          <div className="w-16 h-16 mx-auto rounded-full bg-[#34C759]/10 flex items-center justify-center mb-4">
-            <CheckCircle2 className="w-8 h-8 text-[#34C759]" strokeWidth={2} />
+    <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-[fadeIn_200ms_ease-out]">
+      <div className="bg-white rounded-[24px] shadow-2xl max-w-lg w-full overflow-hidden">
+        {/* Header band with gradient */}
+        <div className="relative bg-gradient-to-br from-emerald-50 via-white to-white px-8 pt-8 pb-6 border-b border-gray-100">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-emerald-500 flex items-center justify-center shadow-md shadow-emerald-500/30 flex-shrink-0">
+              <CheckCircle2 className="w-7 h-7 text-white" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-[22px] font-semibold text-gray-900 leading-tight">Claim submitted</h2>
+              <p className="text-[14px] text-gray-500 mt-1 truncate">
+                <span className="font-mono-ui text-[13px]">{CLAIM.id}</span> → Summit Mutual
+              </p>
+            </div>
           </div>
-          <h2 className="text-[24px] font-semibold text-[#1D1D1F] mb-2">Successfully Submitted!</h2>
-          <p className="text-[15px] text-[#86868B] leading-relaxed">
-            Claim {CLAIM.id} has been sent to Xactimate and is now in Summit Mutual's review queue.
-          </p>
         </div>
 
-        {/* Claim Summary */}
-        <div className="px-6 pb-4">
-          <div className="bg-[#F5F5F7] rounded-[16px] p-4 mb-4">
-            <div className="grid grid-cols-2 gap-4 text-center">
-              <div>
-                <div className="text-[11px] uppercase tracking-wider text-[#86868B] font-medium">Total Estimate</div>
-                <div className="text-[24px] font-semibold text-[#1D1D1F] mt-1">{fmt(totals.total)}</div>
-              </div>
-              <div>
-                <div className="text-[11px] uppercase tracking-wider text-[#86868B] font-medium">Line Items</div>
-                <div className="text-[24px] font-semibold text-[#1D1D1F] mt-1">{totals.count}</div>
-              </div>
+        {/* Stats strip */}
+        <div className="px-7 pt-6 pb-5">
+          <div className="grid grid-cols-3 gap-1 bg-gray-50 rounded-2xl p-5">
+            <div className="text-center border-r border-gray-200">
+              <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold">Estimate</div>
+              <div className="text-[22px] font-semibold text-gray-900 mt-1 tabular">{fmt(totals.total)}</div>
+            </div>
+            <div className="text-center border-r border-gray-200">
+              <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold">Items</div>
+              <div className="text-[22px] font-semibold text-gray-900 mt-1 tabular">{totals.count}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold">Your time</div>
+              <div className="text-[22px] font-semibold text-emerald-600 mt-1 tabular">28m</div>
             </div>
           </div>
 
-          {/* Time Savings */}
-          <div className="bg-gradient-to-r from-[#0071E3]/5 to-[#34C759]/5 rounded-[16px] p-4 mb-6">
-            <div className="text-center mb-3">
-              <div className="text-[11px] uppercase tracking-wider text-[#86868B] font-medium">Time Saved vs Manual</div>
-              <div className="text-[32px] font-semibold text-[#0071E3] leading-none mt-1">
-                2.5<span className="text-[16px] text-[#86868B] ml-1">hours</span>
+          {/* Time saved accent row */}
+          <div className="mt-4 flex items-center justify-between gap-3 px-1">
+            <div className="flex items-center gap-2.5 text-[14px]">
+              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-blue-600" />
               </div>
+              <span className="text-gray-600">
+                Saved <span className="font-semibold text-gray-900">2.5 hours</span> vs manual drafting
+              </span>
             </div>
-            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-black/5">
-              <div className="text-center">
-                <div className="text-[10px] uppercase tracking-wider text-[#86868B]">Manual Baseline</div>
-                <div className="text-[16px] font-medium text-[#1D1D1F] mt-1">~3.0 hrs</div>
-              </div>
-              <div className="text-center">
-                <div className="text-[10px] uppercase tracking-wider text-[#86868B]">Your Time</div>
-                <div className="text-[16px] font-medium text-[#34C759] mt-1">28 min</div>
-              </div>
-            </div>
+            <span className="text-[13px] text-emerald-600 font-semibold flex items-center gap-0.5">
+              <TrendingUp className="w-3.5 h-3.5" />83%
+            </span>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="px-6 pb-6 space-y-3">
+        <div className="px-7 pb-7">
           <button
             onClick={onBackToQueue}
-            className="w-full bg-[#0071E3] hover:brightness-110 text-white px-6 py-4 rounded-[12px] text-[16px] font-semibold flex items-center justify-center gap-3 transition-all"
+            className="w-full bg-gray-900 hover:bg-gray-800 text-white px-6 py-4 rounded-2xl text-[15px] font-semibold flex items-center justify-center gap-2 transition-colors"
           >
-            Back to Claims Queue
+            Back to queue
             <ArrowRight className="w-4 h-4" />
           </button>
-          <button
-            onClick={onTakeBreak}
-            className="w-full bg-gradient-to-r from-[#34C759] to-[#30B64F] hover:brightness-110 text-white px-6 py-3 rounded-[12px] text-[15px] font-semibold flex items-center justify-center gap-3 transition-all"
-          >
-            🎮 Take a Break
-          </button>
-          <button
-            onClick={onClose}
-            className="w-full bg-[#F5F5F7] hover:bg-[#EBEBF0] text-[#1D1D1F] px-6 py-3 rounded-[12px] text-[15px] font-medium transition-all"
-          >
-            Stay on Final Review
-          </button>
+          <div className="mt-4 flex items-center justify-center gap-5 text-[13.5px]">
+            <button
+              onClick={onTakeBreak}
+              className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1.5"
+            >
+              <Activity className="w-3.5 h-3.5" />
+              Take a break
+            </button>
+            <span className="text-gray-200">|</span>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-900 transition-colors"
+            >
+              Stay here
+            </button>
+          </div>
         </div>
       </div>
     </div>

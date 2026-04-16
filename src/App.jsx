@@ -1,11 +1,11 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Search, ChevronRight, ChevronDown, Camera, Box, Ruler, FileText,
   CheckCircle2, AlertTriangle, Sparkles, ArrowRight, ArrowLeft,
   Edit3, Check, X, Shield, Home, Layers, MapPin, Calendar, User, Users,
   Zap, Eye, MoreHorizontal, Send, Clock, FileCheck, Maximize2, Info,
   Hexagon, Activity, TrendingUp, TrendingDown, Building2, CloudHail, Wind, Droplets,
-  Brain, HardHat, Upload
+  Brain, HardHat, Upload, Command as CommandIcon, CornerDownLeft, Timer, Flag
 } from 'lucide-react';
 import House3D from './House3D';
 import House3DAdvanced from './House3DAdvanced';
@@ -97,21 +97,39 @@ const INITIAL_LINE_ITEMS = [
 
 const DASHBOARD_CLAIMS = [
   { id: 'CLM-2026-04812', address: '2847 Pacific Ave', city: 'San Francisco, CA', loss: 'Hail', date: 'Apr 6', status: 'draft_ready', confidence: 94, total: 18420, clickable: true,
-    image: 'https://photos.zillowstatic.com/fp/063e61c4d756c4b0b0b93d8701023db3-cc_ft_1536.webp' },
+    image: 'https://photos.zillowstatic.com/fp/063e61c4d756c4b0b0b93d8701023db3-cc_ft_1536.webp',
+    trend: [88, 91, 89, 92, 90, 93, 94], etaMin: 4, lineItemCount: 17, flaggedCount: 2 },
   { id: 'CLM-2026-04813', address: '512 Valencia St', city: 'San Francisco, CA', loss: 'Hail', date: 'Apr 6', status: 'contractor_negotiation', confidence: null, total: 21350, clickable: true, isContractorNegotiation: true,
     image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop',
-    contractorName: 'Bay Area Roofing Co.', variance: 12 },
+    contractorName: 'Bay Area Roofing Co.', variance: 12,
+    trend: [82, 85, 83, 84, 81, 80, 79], etaMin: 6, lineItemCount: 14 },
   { id: 'CLM-2026-04807', address: '1456 Haight St', city: 'San Francisco, CA', loss: 'Wind', date: 'Apr 6', status: 'draft_ready', confidence: 91, total: 12840,
-    image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=400&h=300&fit=crop' },
+    image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=400&h=300&fit=crop',
+    trend: [85, 86, 88, 87, 89, 90, 91], etaMin: 3, lineItemCount: 11 },
   { id: 'CLM-2026-04803', address: '345 University Ave', city: 'Palo Alto, CA', loss: 'Hail', date: 'Apr 5', status: 'needs_review', confidence: 72, total: 24100,
-    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop' },
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop',
+    trend: [78, 76, 75, 74, 73, 72, 72], etaMin: 9, lineItemCount: 22, flaggedCount: 4 },
   { id: 'CLM-2026-04801', address: '892 Castro St', city: 'Mountain View, CA', loss: 'Water', date: 'Apr 5', status: 'processing', confidence: null, total: null,
-    image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop' },
+    image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop',
+    trend: null },
   { id: 'CLM-2026-04795', address: '2156 Shattuck Ave', city: 'Berkeley, CA', loss: 'Hail', date: 'Apr 4', status: 'draft_ready', confidence: 97, total: 8420,
-    image: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&h=300&fit=crop' },
+    image: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&h=300&fit=crop',
+    trend: [93, 94, 95, 94, 96, 96, 97], etaMin: 2, lineItemCount: 8 },
   { id: 'CLM-2026-04790', address: '789 Broadway', city: 'Oakland, CA', loss: 'Wind', date: 'Apr 4', status: 'manual', confidence: null, total: null,
-    image: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=400&h=300&fit=crop' },
+    image: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=400&h=300&fit=crop',
+    trend: null },
 ];
+
+const AI_ACTIVITY_MESSAGES = [
+  { text: 'Drafting scope for 2847 Pacific Ave', meta: '12 of 17 line items matched' },
+  { text: 'Flagged 2 low-confidence items on 345 University Ave', meta: 'Gutter measurements missing' },
+  { text: 'Completed 512 Valencia St estimate', meta: 'Sent to Bay Area Roofing Co.' },
+  { text: 'Analyzing 84 photos for 2156 Shattuck Ave', meta: '3D model reconciled' },
+  { text: 'Comparing 892 Castro St against 1,204 comparables', meta: 'Processing…' },
+];
+
+const CONFIDENCE_TREND_WEEKLY = [88, 89, 90, 91, 90, 92, 94];
+
 
 // ============ HELPERS ============
 const fmt = (n) => n == null ? '—' : `$${n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
@@ -166,11 +184,26 @@ export default function HoverClaimsPrototype() {
   const [attested, setAttested] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showGame, setShowGame] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
 
   // Scroll to top when screen changes
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [screen]);
+
+  // ⌘K / Ctrl+K to open command palette, Esc to close
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCmdOpen(o => !o);
+      } else if (e.key === 'Escape' && cmdOpen) {
+        setCmdOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [cmdOpen]);
 
   const selectedItem = lineItems.find(i => i.id === selectedItemId);
   const totals = useMemo(() => {
@@ -239,6 +272,10 @@ export default function HoverClaimsPrototype() {
             opacity: 1;
           }
         }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-2px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
         .animate-slideUp {
           animation: slideUp 0.3s ease-out;
         }
@@ -253,7 +290,7 @@ export default function HoverClaimsPrototype() {
 
       <TopNav screen={screen} setScreen={setScreen} totals={totals} showGame={showGame} setShowGame={setShowGame} />
 
-      {screen === 'dashboard' && <Dashboard onOpen={(isContractorNegotiation) => setScreen(isContractorNegotiation ? 'negotiation' : 'summary')} />}
+      {screen === 'dashboard' && <Dashboard onOpen={(isContractorNegotiation) => setScreen(isContractorNegotiation ? 'negotiation' : 'summary')} onOpenCmdK={() => setCmdOpen(true)} />}
       {screen === 'summary' && <Summary onBack={() => setScreen('dashboard')} onReview={() => setScreen('review')} totals={totals} />}
       {screen === 'review' && (
         <ReviewScreen
@@ -284,6 +321,19 @@ export default function HoverClaimsPrototype() {
       )}
       {screen === 'confirmation' && <Confirmation onReset={() => { setScreen('dashboard'); setLineItems(INITIAL_LINE_ITEMS); setAttested(false); }} totals={totals} />}
       {screen === 'negotiation' && <ContractorNegotiationScreen lineItems={lineItems} setLineItems={setLineItems} totals={totals} onBack={() => setScreen('dashboard')} onSubmit={() => setScreen('confirmation')} />}
+
+      {cmdOpen && (
+        <CommandPalette
+          onClose={() => setCmdOpen(false)}
+          onOpenClaim={(c) => {
+            if (!c.clickable) return;
+            setScreen(c.isContractorNegotiation ? 'negotiation' : 'summary');
+          }}
+          onNavigate={(key) => {
+            if (key === 'negotiations') setScreen('negotiation');
+          }}
+        />
+      )}
 
       {editingItem && <EditDrawer item={editingItem} onClose={() => setEditingItem(null)} onSave={handleSaveEdit} />}
       {expandedPhoto && <PhotoLightbox photo={expandedPhoto} onClose={() => setExpandedPhoto(null)} />}
@@ -431,8 +481,62 @@ function TopNav({ screen, showGame, setShowGame }) {
   );
 }
 
+// ============ DASHBOARD PRIMITIVES ============
+function Sparkline({ points, width = 64, height = 20, color = '#0f766e', fill = true, strokeWidth = 1.5 }) {
+  if (!points || points.length < 2) return null;
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = Math.max(1, max - min);
+  const stepX = width / (points.length - 1);
+  const coords = points.map((v, i) => {
+    const x = i * stepX;
+    const y = height - 2 - ((v - min) / range) * (height - 4);
+    return [x, y];
+  });
+  const path = coords.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(2)},${y.toFixed(2)}`).join(' ');
+  const areaPath = `${path} L${width},${height} L0,${height} Z`;
+  const last = coords[coords.length - 1];
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+      {fill && (
+        <path d={areaPath} fill={color} opacity="0.08" />
+      )}
+      <path d={path} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={last[0]} cy={last[1]} r={1.75} fill={color} />
+    </svg>
+  );
+}
+
+function ConfidenceRing({ value, size = 44, strokeWidth = 3.5, showLabel = true }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const pct = Math.max(0, Math.min(100, value ?? 0));
+  const offset = circumference - (pct / 100) * circumference;
+  const color = pct >= 90 ? '#059669' : pct >= 80 ? '#d97706' : pct >= 70 ? '#ea580c' : '#dc2626';
+  const track = pct >= 90 ? '#d1fae5' : pct >= 80 ? '#fef3c7' : pct >= 70 ? '#ffedd5' : '#fee2e2';
+  return (
+    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={radius} stroke={track} strokeWidth={strokeWidth} fill="none" />
+        <circle
+          cx={size / 2} cy={size / 2} r={radius}
+          stroke={color} strokeWidth={strokeWidth} fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+        />
+      </svg>
+      {showLabel && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="tabular font-semibold" style={{ color, fontSize: size * 0.3 }}>{pct}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ============ DASHBOARD ============
-function Dashboard({ onOpen }) {
+function Dashboard({ onOpen, onOpenCmdK }) {
   const [expandedImage, setExpandedImage] = useState(null);
 
   const statusStyles = {
@@ -450,37 +554,79 @@ function Dashboard({ onOpen }) {
     contractor_negotiation: 'Contractor Review'
   };
 
+  // Derived queue stats
+  const readyClaims = DASHBOARD_CLAIMS.filter(c => c.status === 'draft_ready');
+  const needReview = DASHBOARD_CLAIMS.filter(c => c.status === 'needs_review');
+  const featured = [...readyClaims].filter(c => c.clickable).sort((a, b) => b.confidence - a.confidence)[0] || readyClaims[0];
+  const savableMinutes = readyClaims.reduce((s, c) => s + (c.etaMin ? (45 - c.etaMin) : 35), 0);
+  const savableHours = (savableMinutes / 60).toFixed(1);
+  const avgConf = Math.round(readyClaims.reduce((s, c) => s + c.confidence, 0) / readyClaims.length);
+  const progressPct = Math.round((readyClaims.length / DASHBOARD_CLAIMS.length) * 100);
+
   return (
-    <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-8 md:py-12">
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 gap-4">
+    <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 md:py-8">
+      {/* 5. Ambient AI activity strip */}
+      <AIActivityStrip />
+
+      {/* 6. Smart greeting */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 md:mb-8 gap-4 mt-6">
         <div>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-[11px] md:text-[12px] uppercase tracking-wider text-gray-500 font-medium">My Queue</span>
             <span className="text-[11px] md:text-[12px] text-gray-300">•</span>
             <span className="text-[11px] md:text-[12px] text-gray-500">Thursday, April 16, 2026</span>
           </div>
-          <h1 className="font-display text-[2.025rem] md:text-[3.375rem] text-gray-900 leading-tight tracking-tight">Good afternoon, Yosef.</h1>
-          <p className="text-gray-600 mt-3 md:mt-4 text-[14px] md:text-[16px] leading-relaxed">You have <span className="text-gray-900 font-semibold">6 claims</span> in your queue. 3 are ready to review with high-confidence AI drafts.</p>
+          <h1 className="font-display text-[2.025rem] md:text-[3.375rem] text-gray-900 leading-tight tracking-tight">Afternoon, Yosef.</h1>
+          <p className="text-gray-600 mt-3 md:mt-4 text-[15px] md:text-[17px] leading-relaxed max-w-2xl">
+            <span className="text-gray-900 font-semibold">{readyClaims.length} drafts ready</span>, <span className="text-amber-700 font-semibold">{needReview.length} needs your eyes</span>.
+            Avg confidence up <span className="text-emerald-700 font-semibold">+4 pts</span> this week — you'll save about <span className="text-gray-900 font-semibold">{savableHours}h</span> if you clear the queue today.
+          </p>
         </div>
-        <div className="flex items-center gap-3 mt-4 md:mt-0">
+        <div className="flex items-center gap-2 mt-4 md:mt-0">
+          <button
+            onClick={onOpenCmdK}
+            className="hidden md:flex items-center gap-2 text-[13px] px-3 py-2 text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg transition-colors touch-manipulation"
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span>Search & jump</span>
+            <span className="ml-2 flex items-center gap-0.5 text-[11px] text-gray-400 border border-gray-200 rounded px-1.5 py-0.5 font-mono-ui">⌘K</span>
+          </button>
           <button className="text-[14px] px-4 py-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation">Filter</button>
           <button className="text-[14px] px-4 py-2.5 bg-gray-900 text-white hover:bg-gray-800 rounded-lg transition-colors touch-manipulation">Export</button>
         </div>
       </div>
 
-      {/* Metric strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6 md:mb-8">
-        <MetricCard label="In queue" value="6" delta="+2 today" />
-        <MetricCard label="Drafts ready" value="3" accent="emerald" delta="94% avg confidence" />
-        <MetricCard label="Need review" value="1" accent="amber" delta="Action required" />
-        <MetricCard label="Claims completed this week" value="84" accent="blue" delta="vs. 72 last week" />
-        <MetricCard label="Time saved this week" value="14.2h" accent="emerald" delta="vs. manual baseline" />
+      {/* 1 + 2. Hero: Start Here + Today panel */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4 mb-4">
+        {featured && (
+          <StartHereCard
+            claim={featured}
+            onOpen={() => onOpen(featured.isContractorNegotiation)}
+            onExpandPhoto={() => setExpandedImage({ src: featured.image, alt: `${featured.address}, ${featured.city}`, address: featured.address, city: featured.city })}
+          />
+        )}
+        <TodayHero
+          savableHours={savableHours}
+          readyCount={readyClaims.length}
+          totalCount={DASHBOARD_CLAIMS.length}
+          needReview={needReview.length}
+          avgConf={avgConf}
+          progressPct={progressPct}
+        />
+      </div>
+
+      {/* Compact metric sub-row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 md:mb-8">
+        <CompactMetric label="In queue" value="6" delta="+2 today" />
+        <CompactMetric label="Need review" value="1" delta="Action required" accent="amber" />
+        <CompactMetric label="Completed this week" value="84" delta="vs. 72 last week" accent="blue" />
+        <CompactMetric label="Time saved this week" value="14.2h" delta="vs. manual baseline" accent="emerald" />
       </div>
 
       {/* Claims list - responsive */}
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
         {/* Desktop table header */}
-        <div className="hidden lg:grid grid-cols-[1.3fr_1.8fr_0.8fr_0.7fr_0.7fr_1.1fr_0.9fr_0.7fr] gap-4 px-6 xl:px-8 py-4 bg-gray-50 border-b border-gray-100 text-[12px] uppercase tracking-wider text-gray-600 font-semibold items-center">
+        <div className="hidden lg:grid grid-cols-[1fr_1.6fr_0.9fr_0.7fr_0.7fr_1.4fr_0.9fr] gap-4 px-6 xl:px-8 py-4 bg-gray-50 border-b border-gray-100 text-[11px] uppercase tracking-wider text-gray-500 font-semibold items-center">
           <div>Claim ID</div>
           <div>Property</div>
           <div>Photo</div>
@@ -488,7 +634,6 @@ function Dashboard({ onOpen }) {
           <div>Inspected</div>
           <div>AI Draft</div>
           <div className="text-right">Est. Total</div>
-          <div></div>
         </div>
 
         {/* Mobile section header */}
@@ -504,8 +649,8 @@ function Dashboard({ onOpen }) {
             className={`w-full text-left border-b border-gray-50 last:border-0 transition-colors touch-manipulation ${c.clickable ? 'hover:bg-gray-50 active:bg-gray-100 cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
           >
             {/* Desktop table row */}
-            <div className="hidden lg:grid grid-cols-[1.3fr_1.8fr_0.8fr_0.7fr_0.7fr_1.1fr_0.9fr_0.7fr] gap-4 px-6 xl:px-8 py-5 items-center">
-              <div className="font-mono-ui text-[13px] text-gray-600">{c.id}</div>
+            <div className="hidden lg:grid grid-cols-[1fr_1.6fr_0.9fr_0.7fr_0.7fr_1.4fr_0.9fr] gap-4 px-6 xl:px-8 py-4 items-center">
+              <div className="font-mono-ui text-[12px] text-gray-500">{c.id}</div>
               <div>
                 <div className="text-[14px] text-gray-900 font-medium">{c.address}</div>
                 <div className="text-[12px] text-gray-500">{c.city}</div>
@@ -514,6 +659,7 @@ function Dashboard({ onOpen }) {
                 <PropertyImage
                   src={c.image}
                   alt={`${c.address}, ${c.city}`}
+                  showBadge
                   onClick={(e) => {
                     e.stopPropagation();
                     setExpandedImage({ src: c.image, alt: `${c.address}, ${c.city}`, address: c.address, city: c.city });
@@ -521,49 +667,30 @@ function Dashboard({ onOpen }) {
                 />
               </div>
               <div><LossTypeBadge lossType={c.loss} /></div>
-              <div className="text-[14px] text-gray-600">{c.date}</div>
+              <div className="text-[13px] text-gray-600">{c.date}</div>
               <div>
-                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${statusStyles[c.status]}`}>
-                  {c.status === 'draft_ready' && <Sparkles className="w-2.5 h-2.5" />}
-                  {c.status === 'needs_review' && <AlertTriangle className="w-2.5 h-2.5" />}
-                  {c.status === 'processing' && <Clock className="w-2.5 h-2.5" />}
-                  {c.status === 'contractor_negotiation' && <Users className="w-2.5 h-2.5" />}
-                  {statusLabels[c.status]}
-                </span>
-                {c.confidence && (
-                  <div className="text-[12px] text-gray-500 mt-1 tabular">{c.confidence}% confidence</div>
-                )}
-                {c.status === 'contractor_negotiation' && c.contractorName && (
-                  <div className="text-[12px] text-gray-500 mt-1">
-                    <span className="text-purple-600 font-medium">{c.contractorName}</span>
-                    <span className="ml-1.5">• {c.variance}% variance</span>
-                  </div>
-                )}
+                <StatusCell claim={c} statusStyles={statusStyles} statusLabels={statusLabels} />
               </div>
               <div className="text-right tabular">
                 <div className="text-[14px] text-gray-900 font-semibold">{fmt(c.total)}</div>
               </div>
-              <div></div>
             </div>
 
             {/* Mobile card layout */}
             <div className="lg:hidden p-4">
               <div className="flex items-start gap-4">
-                {/* Photo */}
                 <div className="flex-shrink-0">
                   <PropertyImage
                     src={c.image}
                     alt={`${c.address}, ${c.city}`}
+                    showBadge
                     onClick={(e) => {
                       e.stopPropagation();
                       setExpandedImage({ src: c.image, alt: `${c.address}, ${c.city}`, address: c.address, city: c.city });
                     }}
                   />
                 </div>
-
-                {/* Main content */}
                 <div className="flex-1 min-w-0">
-                  {/* Header row */}
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0">
                       <div className="text-[15px] text-gray-900 font-medium truncate">{c.address}</div>
@@ -573,32 +700,13 @@ function Dashboard({ onOpen }) {
                       <div className="text-[15px] text-gray-900 font-semibold tabular">{fmt(c.total)}</div>
                     </div>
                   </div>
-
-                  {/* Details row */}
                   <div className="flex flex-wrap items-center gap-3 text-[13px]">
                     <div className="font-mono-ui text-gray-500">{c.id}</div>
                     <LossTypeBadge lossType={c.loss} />
                     <div className="text-gray-500">{c.date}</div>
                   </div>
-
-                  {/* Status row */}
                   <div className="mt-3">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-medium border ${statusStyles[c.status]}`}>
-                      {c.status === 'draft_ready' && <Sparkles className="w-3 h-3" />}
-                      {c.status === 'needs_review' && <AlertTriangle className="w-3 h-3" />}
-                      {c.status === 'processing' && <Clock className="w-3 h-3" />}
-                      {c.status === 'contractor_negotiation' && <Users className="w-3 h-3" />}
-                      {statusLabels[c.status]}
-                    </span>
-                    {c.confidence && (
-                      <span className="ml-2 text-[12px] text-gray-500 tabular">{c.confidence}% confidence</span>
-                    )}
-                    {c.status === 'contractor_negotiation' && c.contractorName && (
-                      <div className="text-[12px] text-gray-500 mt-1">
-                        <span className="text-purple-600 font-medium">{c.contractorName}</span>
-                        <span className="ml-1.5">• {c.variance}% variance</span>
-                      </div>
-                    )}
+                    <StatusCell claim={c} statusStyles={statusStyles} statusLabels={statusLabels} mobile />
                   </div>
                 </div>
               </div>
@@ -611,18 +719,19 @@ function Dashboard({ onOpen }) {
         <Info className="w-3.5 h-3.5" />
         <span>Demo: only the Henderson claim is clickable. All other data is illustrative.</span>
       </div>
-    {expandedImage && (
-  <PropertyImageLightbox image={expandedImage} onClose={() => setExpandedImage(null)} />
-)}</main>
+      {expandedImage && (
+        <PropertyImageLightbox image={expandedImage} onClose={() => setExpandedImage(null)} />
+      )}
+    </main>
   );
 }
-function PropertyImage({ src, alt, onClick }) {
+function PropertyImage({ src, alt, onClick, showBadge = false }) {
   const [errored, setErrored] = useState(false);
 
   if (errored || !src) {
     return (
-      <div className="w-14 h-10 rounded-md bg-stone-100 border border-stone-200 flex items-center justify-center">
-        <Home className="w-3.5 h-3.5 text-stone-400" />
+      <div className="w-20 h-14 rounded-lg bg-stone-100 border border-stone-200 flex items-center justify-center">
+        <Home className="w-4 h-4 text-stone-400" />
       </div>
     );
   }
@@ -630,7 +739,7 @@ function PropertyImage({ src, alt, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-14 h-10 rounded-md overflow-hidden border border-stone-200 hover:border-stone-400 hover:ring-2 hover:ring-stone-900/10 transition-all"
+      className="relative w-20 h-14 rounded-lg overflow-hidden border border-stone-200 hover:border-stone-400 hover:ring-2 hover:ring-stone-900/10 transition-all group"
       aria-label={`Expand photo of ${alt}`}
     >
       <img
@@ -639,6 +748,11 @@ function PropertyImage({ src, alt, onClick }) {
         onError={() => setErrored(true)}
         className="w-full h-full object-cover"
       />
+      {showBadge && (
+        <span className="absolute bottom-0.5 left-0.5 inline-flex items-center gap-0.5 bg-black/70 backdrop-blur-sm text-white text-[8.5px] font-semibold px-1 py-[1px] rounded-[3px] tracking-wide">
+          <Box className="w-2 h-2" />3D
+        </span>
+      )}
     </button>
   );
 }
@@ -667,14 +781,348 @@ function PropertyImageLightbox({ image, onClose }) {
     </div>
   );
 }
-function MetricCard({ label, value, delta, accent }) {
+function CompactMetric({ label, value, delta, accent }) {
+  const valueColor = accent === 'emerald' ? 'text-emerald-700' : accent === 'amber' ? 'text-amber-700' : accent === 'blue' ? 'text-blue-700' : 'text-gray-900';
   return (
-    <div className="bg-white border border-stone-200 rounded-xl p-4 md:p-5">
-      <div className="text-[10px] md:text-[11px] uppercase tracking-wider text-stone-500 font-medium">{label}</div>
-      <div className="flex items-baseline gap-2 mt-1.5 md:mt-2">
-        <div className={`font-display text-3xl md:text-4xl leading-none ${accent === 'emerald' ? 'text-emerald-700' : accent === 'amber' ? 'text-amber-700' : accent === 'blue' ? 'text-blue-700' : 'text-stone-900'}`}>{value}</div>
+    <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+      <div className="min-w-0">
+        <div className="text-[10px] uppercase tracking-wider text-gray-500 font-medium truncate">{label}</div>
+        <div className="text-[11px] text-gray-400 mt-0.5 truncate">{delta}</div>
       </div>
-      <div className="text-[10px] md:text-[11px] text-stone-500 mt-1.5 md:mt-2">{delta}</div>
+      <div className={`font-display text-2xl md:text-[28px] leading-none tabular ${valueColor}`}>{value}</div>
+    </div>
+  );
+}
+
+// ============ AI ACTIVITY STRIP ============
+function AIActivityStrip() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx(i => (i + 1) % AI_ACTIVITY_MESSAGES.length), 3800);
+    return () => clearInterval(t);
+  }, []);
+  const msg = AI_ACTIVITY_MESSAGES[idx];
+  return (
+    <div className="flex items-center gap-3 px-4 py-2 bg-white border border-gray-200 rounded-full text-[12.5px] text-gray-600 shadow-sm w-fit">
+      <span className="relative flex h-2 w-2">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+      </span>
+      <span className="uppercase tracking-wider text-[10.5px] font-semibold text-emerald-700">Live</span>
+      <span className="text-gray-300">•</span>
+      <div key={idx} className="flex items-center gap-2 animate-[fadeIn_400ms_ease-out]">
+        <Sparkles className="w-3.5 h-3.5 text-gray-400" />
+        <span className="text-gray-900 font-medium">{msg.text}</span>
+        <span className="text-gray-400 hidden md:inline">— {msg.meta}</span>
+      </div>
+    </div>
+  );
+}
+
+// ============ TODAY HERO ============
+function TodayHero({ savableHours, readyCount, totalCount, needReview, avgConf, progressPct }) {
+  return (
+    <div className="relative bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white rounded-2xl p-6 md:p-7 overflow-hidden shadow-sm">
+      {/* subtle grid pattern */}
+      <div className="absolute inset-0 opacity-[0.04]" style={{
+        backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+        backgroundSize: '24px 24px',
+      }} />
+      <div className="relative flex items-start justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-md bg-white/10 flex items-center justify-center">
+            <Timer className="w-3.5 h-3.5 text-emerald-300" />
+          </div>
+          <span className="text-[11px] uppercase tracking-wider text-gray-300 font-semibold">Time you'll save today</span>
+        </div>
+        <Sparkline points={CONFIDENCE_TREND_WEEKLY} width={70} height={22} color="#6ee7b7" fill={false} />
+      </div>
+
+      <div className="relative">
+        <div className="flex items-baseline gap-2">
+          <span className="font-display text-[52px] md:text-[64px] leading-none tracking-tight text-white">{savableHours}</span>
+          <span className="font-display text-[28px] md:text-[32px] leading-none text-gray-300">hours</span>
+        </div>
+        <div className="text-[13px] text-gray-300 mt-2 max-w-xs leading-relaxed">
+          projected savings if you review today's <span className="text-white font-semibold">{readyCount} AI-ready drafts</span> — vs. drafting them by hand.
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="relative mt-6">
+        <div className="flex items-center justify-between text-[11px] mb-2">
+          <span className="text-gray-300">Queue progress</span>
+          <span className="tabular text-gray-200 font-medium">{readyCount} of {totalCount} ready</span>
+        </div>
+        <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-emerald-400 to-emerald-300 rounded-full transition-all duration-700"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
+      </div>
+
+      <div className="relative mt-5 flex items-center gap-5 text-[12px]">
+        <div className="flex items-center gap-1.5 text-gray-300">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span className="tabular text-white font-semibold">{avgConf}%</span>
+          <span>avg confidence</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-gray-300">
+          <TrendingUp className="w-3 h-3 text-emerald-300" />
+          <span className="text-emerald-300">+4 pts</span>
+          <span>wk/wk</span>
+        </div>
+        {needReview > 0 && (
+          <div className="flex items-center gap-1.5 text-gray-300">
+            <Flag className="w-3 h-3 text-amber-300" />
+            <span className="text-amber-200 tabular font-semibold">{needReview}</span>
+            <span>flagged</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============ START HERE CARD ============
+function StartHereCard({ claim, onOpen, onExpandPhoto }) {
+  return (
+    <div className="relative bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm group">
+      <div className="grid grid-cols-1 md:grid-cols-[260px_1fr]">
+        {/* Photo */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onExpandPhoto(); }}
+          className="relative aspect-[16/10] md:aspect-auto md:h-full bg-gray-100 overflow-hidden"
+          aria-label="Expand property photo"
+        >
+          <img
+            src={claim.image}
+            alt={`${claim.address}, ${claim.city}`}
+            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+          />
+          <span className="absolute top-3 left-3 inline-flex items-center gap-1 bg-black/70 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded-md tracking-wide">
+            <Box className="w-3 h-3" />3D MODEL
+          </span>
+          <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-white/95 backdrop-blur-sm text-gray-700 text-[10px] font-semibold px-2 py-1 rounded-md">
+            <Camera className="w-3 h-3" />84 photos
+          </span>
+        </button>
+
+        {/* Body */}
+        <div className="p-5 md:p-6 flex flex-col">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10.5px] font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200 uppercase tracking-wider">
+              <Sparkles className="w-2.5 h-2.5" />Start here
+            </span>
+            <span className="font-mono-ui text-[11px] text-gray-400">{claim.id}</span>
+          </div>
+
+          <div className="mt-2 flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h2 className="font-display text-[22px] md:text-[26px] text-gray-900 leading-tight tracking-tight truncate">{claim.address}</h2>
+              <div className="text-[13px] text-gray-500 mt-0.5">{claim.city}</div>
+            </div>
+            <div className="flex-shrink-0 flex flex-col items-center gap-1">
+              <ConfidenceRing value={claim.confidence} size={56} strokeWidth={5} />
+              <div className="text-[9.5px] uppercase tracking-wider text-gray-500 font-semibold whitespace-nowrap flex items-center gap-1">
+                <Sparkles className="w-2.5 h-2.5 text-gray-400" />
+                AI Confidence
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-[12.5px]">
+            <LossTypeBadge lossType={claim.loss} />
+            <div className="flex items-center gap-1.5 text-gray-600">
+              <Calendar className="w-3.5 h-3.5 text-gray-400" />
+              <span>Inspected {claim.date}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-gray-600">
+              <FileText className="w-3.5 h-3.5 text-gray-400" />
+              <span>{claim.lineItemCount} line items</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-gray-600">
+              <span className="font-semibold tabular text-gray-900">{fmt(claim.total)}</span>
+              <span className="text-gray-400">est.</span>
+            </div>
+          </div>
+
+          <div className="mt-5 pt-5 border-t border-gray-100 flex items-center justify-between gap-3">
+            <div className="text-[12.5px] text-gray-600 flex items-center gap-2">
+              <Timer className="w-3.5 h-3.5 text-gray-400" />
+              <span>AI estimates <span className="font-semibold text-gray-900">~{claim.etaMin} min</span> to review</span>
+            </div>
+            <button
+              onClick={onOpen}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-[13px] font-medium rounded-lg transition-colors shadow-sm"
+            >
+              Review now
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============ STATUS CELL ============
+function StatusCell({ claim, statusStyles, statusLabels, mobile = false }) {
+  const c = claim;
+  const chipSize = mobile ? 'text-[12px] px-2.5 py-1' : 'text-[11px] px-2 py-0.5';
+  const iconSize = mobile ? 'w-3 h-3' : 'w-2.5 h-2.5';
+  const sparkColor = c.confidence == null ? '#9ca3af' : c.confidence >= 90 ? '#059669' : c.confidence >= 80 ? '#d97706' : '#dc2626';
+  return (
+    <div className="flex items-center gap-3">
+      {c.confidence != null ? (
+        <ConfidenceRing value={c.confidence} size={36} strokeWidth={3} />
+      ) : (
+        <div className="w-9 h-9 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center">
+          <Clock className="w-3.5 h-3.5 text-gray-400" />
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <span className={`inline-flex items-center gap-1 rounded-md font-medium border ${statusStyles[c.status]} ${chipSize}`}>
+          {c.status === 'draft_ready' && <Sparkles className={iconSize} />}
+          {c.status === 'needs_review' && <AlertTriangle className={iconSize} />}
+          {c.status === 'processing' && <Clock className={iconSize} />}
+          {c.status === 'contractor_negotiation' && <Users className={iconSize} />}
+          {statusLabels[c.status]}
+        </span>
+        {c.trend && c.confidence != null && (
+          <div className="mt-1 flex items-center gap-1.5">
+            <Sparkline points={c.trend} width={48} height={14} color={sparkColor} strokeWidth={1.25} />
+            <span className="text-[10.5px] text-gray-400 tabular">7d</span>
+          </div>
+        )}
+        {c.status === 'contractor_negotiation' && c.contractorName && (
+          <div className="text-[11.5px] text-gray-500 mt-1 truncate">
+            <span className="text-purple-600 font-medium">{c.contractorName}</span>
+            <span className="ml-1.5">• {c.variance}% variance</span>
+          </div>
+        )}
+        {c.status === 'processing' && (
+          <div className="text-[11.5px] text-gray-400 mt-1">Analyzing photos…</div>
+        )}
+        {c.status === 'manual' && (
+          <div className="text-[11.5px] text-gray-400 mt-1">Needs manual draft</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============ COMMAND PALETTE ============
+function CommandPalette({ onClose, onOpenClaim, onNavigate }) {
+  const [query, setQuery] = useState('');
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => inputRef.current?.focus(), 20);
+    return () => clearTimeout(t);
+  }, []);
+
+  const q = query.trim().toLowerCase();
+  const matchedClaims = DASHBOARD_CLAIMS.filter(c =>
+    !q ||
+    c.id.toLowerCase().includes(q) ||
+    c.address.toLowerCase().includes(q) ||
+    c.city.toLowerCase().includes(q) ||
+    c.loss.toLowerCase().includes(q)
+  ).slice(0, 6);
+
+  const quickActions = [
+    { label: 'Export all claims as CSV', icon: Upload, key: 'export' },
+    { label: 'Filter: Drafts ready only', icon: Sparkles, key: 'filter-ready' },
+    { label: 'Filter: Needs review', icon: AlertTriangle, key: 'filter-review' },
+    { label: 'Jump to contractor negotiations', icon: Users, key: 'negotiations' },
+  ].filter(a => !q || a.label.toLowerCase().includes(q));
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-sm flex items-start justify-center pt-[12vh] px-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 px-4 border-b border-gray-100">
+          <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search claims, properties, or actions…"
+            className="flex-1 py-4 text-[15px] outline-none placeholder:text-gray-400"
+          />
+          <span className="text-[11px] text-gray-400 border border-gray-200 rounded px-1.5 py-0.5 font-mono-ui">Esc</span>
+        </div>
+
+        <div className="max-h-[50vh] overflow-y-auto">
+          {matchedClaims.length > 0 && (
+            <div className="py-2">
+              <div className="px-4 py-1.5 text-[10.5px] uppercase tracking-wider text-gray-400 font-semibold">Claims</div>
+              {matchedClaims.map((c) => (
+                <button
+                  key={c.id}
+                  disabled={!c.clickable}
+                  onClick={() => { onOpenClaim(c); onClose(); }}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-left ${c.clickable ? 'hover:bg-gray-50 cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
+                >
+                  <div className="w-10 h-7 rounded overflow-hidden border border-gray-200 flex-shrink-0 bg-gray-100">
+                    {c.image && <img src={c.image} alt="" className="w-full h-full object-cover" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] text-gray-900 font-medium truncate">{c.address}</div>
+                    <div className="text-[11.5px] text-gray-500 truncate">
+                      <span className="font-mono-ui">{c.id}</span> • {c.city} • {c.loss}
+                    </div>
+                  </div>
+                  {c.confidence != null && (
+                    <span className="text-[11px] text-gray-500 tabular">{c.confidence}%</span>
+                  )}
+                  <CornerDownLeft className="w-3.5 h-3.5 text-gray-300" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {quickActions.length > 0 && (
+            <div className="py-2 border-t border-gray-100">
+              <div className="px-4 py-1.5 text-[10.5px] uppercase tracking-wider text-gray-400 font-semibold">Quick actions</div>
+              {quickActions.map((a) => (
+                <button
+                  key={a.key}
+                  onClick={() => { onNavigate?.(a.key); onClose(); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-50"
+                >
+                  <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <a.icon className="w-3.5 h-3.5 text-gray-600" />
+                  </div>
+                  <div className="text-[13px] text-gray-900 flex-1">{a.label}</div>
+                  <CornerDownLeft className="w-3.5 h-3.5 text-gray-300" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {matchedClaims.length === 0 && quickActions.length === 0 && (
+            <div className="px-4 py-10 text-center text-[13px] text-gray-400">No matches for "{query}"</div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-2 px-4 py-2.5 bg-gray-50 border-t border-gray-100 text-[11px] text-gray-500">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1"><CornerDownLeft className="w-3 h-3" />to select</span>
+            <span className="flex items-center gap-1"><span className="font-mono-ui">↑↓</span>to navigate</span>
+          </div>
+          <span className="flex items-center gap-1">
+            <CommandIcon className="w-3 h-3" />K to toggle
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

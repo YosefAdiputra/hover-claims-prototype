@@ -120,9 +120,9 @@ const fmtDetail = (n) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 
 const CONFIDENCE_COLORS = {
   high: { dot: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200', ring: 'ring-emerald-500/20' },
   med:  { dot: 'bg-amber-500',   text: 'text-amber-700',   bg: 'bg-amber-50',   border: 'border-amber-200',   ring: 'ring-amber-500/20' },
-  low:  { dot: 'bg-rose-500',    text: 'text-rose-700',    bg: 'bg-rose-50',    border: 'border-rose-200',    ring: 'ring-rose-500/20' },
+  low:  { dot: 'bg-red-500',     text: 'text-red-700',     bg: 'bg-red-50',     border: 'border-red-200',     ring: 'ring-red-500/20' },
 };
-const confBand = (c) => c == null ? 'low' : c >= 90 ? 'high' : c >= 75 ? 'med' : 'low';
+const confBand = (c) => c == null ? 'low' : c >= 90 ? 'high' : c >= 80 ? 'med' : 'low';
 
 const LossTypeBadge = ({ lossType }) => {
   const configs = {
@@ -159,7 +159,7 @@ const LossTypeBadge = ({ lossType }) => {
 export default function HoverClaimsPrototype() {
   const [screen, setScreen] = useState('dashboard');
   const [lineItems, setLineItems] = useState(INITIAL_LINE_ITEMS);
-  const [selectedItemId, setSelectedItemId] = useState(1);
+  const [selectedItemId, setSelectedItemId] = useState(10);
   const [editingItem, setEditingItem] = useState(null);
   const [evidenceTab, setEvidenceTab] = useState('photos');
   const [expandedPhoto, setExpandedPhoto] = useState(null);
@@ -459,7 +459,7 @@ function Dashboard({ onOpen }) {
             <span className="text-[11px] md:text-[12px] text-gray-300">•</span>
             <span className="text-[11px] md:text-[12px] text-gray-500">Thursday, April 16, 2026</span>
           </div>
-          <h1 className="font-display text-[2.025rem] md:text-[3.375rem] text-gray-900 leading-tight tracking-tight">Good morning, Yosef.</h1>
+          <h1 className="font-display text-[2.025rem] md:text-[3.375rem] text-gray-900 leading-tight tracking-tight">Good afternoon, Yosef.</h1>
           <p className="text-gray-600 mt-3 md:mt-4 text-[14px] md:text-[16px] leading-relaxed">You have <span className="text-gray-900 font-semibold">6 claims</span> in your queue. 3 are ready to review with high-confidence AI drafts.</p>
         </div>
         <div className="flex items-center gap-3 mt-4 md:mt-0">
@@ -779,9 +779,33 @@ function Summary({ onBack, onReview, totals }) {
               <div className="text-[12px] uppercase tracking-wider text-[#86868B] font-medium mb-2">Total Repair Estimate</div>
               <div className="text-[48px] font-semibold text-[#1D1D1F] leading-none tracking-tight mb-1">{fmt(totals.total)}</div>
               <div className="text-[14px] text-[#86868B] mb-3">Including materials + local San Francisco, CA labor</div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 rounded-full text-blue-600 font-medium text-[13px] mb-2">
-                <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+              <div className="relative inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-full text-emerald-600 font-medium text-[13px] mb-2 cursor-help group">
+                <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full"></span>
                 94% Confident
+
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                  <div className="font-medium mb-1">AI Confidence Levels:</div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                      <span>≥90% - High confidence</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
+                      <span>≥80% - Medium confidence</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                      <span>&lt;80% - Low confidence</span>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-300 mt-2 border-t border-gray-700 pt-1">
+                    Based on AI analysis of photos, measurements, and damage patterns
+                  </div>
+                  {/* Arrow */}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                </div>
               </div>
               <div className="text-[14px] text-[#86868B]">{totals.count} line items • {totals.needsReview > 0 ? `${totals.needsReview} need review` : 'All items verified'}</div>
             </div>
@@ -1147,8 +1171,7 @@ function LineItemRow({ item, selected, onSelect }) {
               {item.confidence && (
                 <div className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
                   item.confidence >= 90 ? 'text-emerald-700 bg-emerald-50' :
-                  item.confidence >= 80 ? 'text-blue-700 bg-blue-50' :
-                  item.confidence >= 70 ? 'text-amber-700 bg-amber-50' :
+                  item.confidence >= 80 ? 'text-amber-700 bg-amber-50' :
                   'text-red-700 bg-red-50'
                 }`}>
                   {item.confidence}%
@@ -2541,7 +2564,7 @@ function ApproveScreen({ totals, lineItems, attested, setAttested, setScreen, on
       <div className="mb-8">
         <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium mb-2">Final Review</div>
         <h1 className="font-display text-4xl md:text-5xl text-stone-900 leading-tight">Ready to submit?</h1>
-        <p className="text-stone-500 mt-3 text-[14px]">Review your scope and attest before sending to Xactimate.</p>
+        <p className="text-stone-500 mt-3 text-[14px]">Review your scope and attest before approving the estimate.</p>
       </div>
 
       {/* Metric strip */}
@@ -2799,9 +2822,22 @@ function ContractorNegotiationScreen({ lineItems, setLineItems, totals, onBack, 
     const proposals = {};
     lineItems.forEach((item, index) => {
       if (item.status !== 'rejected') {
-        // Simulate contractor counter-proposals with some variance
-        const variance = Math.random() * 0.2 - 0.1; // -10% to +10%
-        const shouldCounter = Math.random() > 0.6; // 40% chance to counter
+        // Contractor proposals typically higher due to local market conditions
+        const variance = 0.08 + (Math.random() * 0.17); // +8% to +25%
+        const shouldCounter = Math.random() > 0.25; // 75% chance to counter with higher price
+
+        const justifications = [
+          'Local San Francisco labor costs exceed state average by 35%',
+          'Union requirements mandate certified roofers at premium rates',
+          'Material delivery surcharges due to city access restrictions',
+          'Permits require additional structural engineering review',
+          'Bay Area seismic compliance adds specialized fastener requirements',
+          'Local disposal fees for roofing materials increased 25% this year',
+          'Crane rental required due to limited truck access on Pacific Ave',
+          'OSHA safety requirements exceed standard due to property elevation',
+          'Current material costs higher in SF market',
+          'Premium materials required for historic district compliance'
+        ];
 
         proposals[item.id] = {
           accepted: !shouldCounter,
@@ -2809,11 +2845,7 @@ function ContractorNegotiationScreen({ lineItems, setLineItems, totals, onBack, 
           proposedPrice: shouldCounter ? item.unitPrice * (1 + variance) : item.unitPrice,
           originalQty: item.qty,
           proposedQty: item.qty,
-          reason: shouldCounter ?
-            variance > 0 ?
-              'Current material costs higher in SF market' :
-              'Can source materials at lower cost through preferred vendor'
-            : null,
+          reason: shouldCounter ? justifications[Math.floor(Math.random() * justifications.length)] : null,
           variance: variance
         };
       }
@@ -2833,12 +2865,28 @@ function ContractorNegotiationScreen({ lineItems, setLineItems, totals, onBack, 
   const stats = calculateNegotiationStats();
 
   const handleAutoNegotiate = () => {
-    // Auto-approve items within 10% variance
+    // Auto-approve items within 10% variance by accepting AI pricing
     const updated = { ...contractorProposals };
     Object.keys(updated).forEach(id => {
       if (Math.abs(updated[id].variance) <= 0.1) {
         updated[id].accepted = true;
-        updated[id].finalPrice = (updated[id].originalPrice + updated[id].proposedPrice) / 2;
+        updated[id].finalPrice = updated[id].originalPrice;
+        updated[id].counterAccepted = false;
+      }
+    });
+    setContractorProposals(updated);
+    setShowAutoApproval(true);
+    setTimeout(() => setShowAutoApproval(false), 3000);
+  };
+
+  const handleAutoAcceptCounter = () => {
+    // Auto-accept all contractor counter-proposals
+    const updated = { ...contractorProposals };
+    Object.keys(updated).forEach(id => {
+      if (!updated[id].accepted) {
+        updated[id].accepted = false;
+        updated[id].counterAccepted = true;
+        updated[id].finalPrice = updated[id].proposedPrice;
       }
     });
     setContractorProposals(updated);
@@ -2848,12 +2896,65 @@ function ContractorNegotiationScreen({ lineItems, setLineItems, totals, onBack, 
 
   return (
     <main className="min-h-screen bg-stone-50">
-      {/* Header */}
+      {/* Header with Claim Details */}
       <div className="bg-white border-b border-stone-200">
         <div className="max-w-[1600px] mx-auto px-6 py-4">
           <button onClick={onBack} className="flex items-center gap-2 text-stone-600 hover:text-stone-900 text-[13px] mb-4">
             <ArrowLeft className="w-3.5 h-3.5" /> Back to approval
           </button>
+
+          {/* Claim Info Header */}
+          <div className="flex items-start gap-6 mb-6">
+            <div className="flex-shrink-0">
+              <img
+                src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=120&h=90&fit=crop&crop=house"
+                alt="Property at 2847 Pacific Avenue"
+                className="w-20 h-15 rounded-lg object-cover border border-stone-200"
+              />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h1 className="text-lg font-semibold text-stone-900 mb-1">512 Valencia Street</h1>
+                  <div className="text-sm text-stone-600 mb-2">San Francisco, CA 94110</div>
+                  <div className="flex items-center gap-4 text-xs text-stone-500">
+                    <span>Claim #{CLAIM.id}</span>
+                    <span>•</span>
+                    <span>Loss: {CLAIM.lossDate}</span>
+                    <span>•</span>
+                    <span>Inspector: {CLAIM.inspector}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-stone-500 mb-1">Original Estimate</div>
+                  <div className="text-2xl font-bold text-stone-900">{fmt(totals.total)}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Counter-Proposal Summary - Compressed */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 mb-6 border border-blue-200 max-w-4xl">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+                <Brain className="w-3 h-3 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-xs font-medium text-blue-900 mb-1">AI Analysis: Contractor Counter-Proposal</div>
+                <div className="text-xs text-blue-800 leading-relaxed">
+                  <div className="mb-2">
+                    The contractor has submitted counter-proposals for {Object.values(contractorProposals).filter(p => !p.accepted).length} line items,
+                    averaging <strong>+{((Object.values(contractorProposals).filter(p => !p.accepted).reduce((sum, p) => sum + p.variance, 0) /
+                    Math.max(Object.values(contractorProposals).filter(p => !p.accepted).length, 1)) * 100).toFixed(1)}%</strong> above our estimates.
+                  </div>
+                  <div>
+                    <strong>Recommendation:</strong> Most variances align with local market conditions for the SF market.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between">
             <div>
               <div className="text-[11px] uppercase tracking-wider text-stone-500 font-medium">CONTRACTOR NEGOTIATION</div>
@@ -2889,13 +2990,37 @@ function ContractorNegotiationScreen({ lineItems, setLineItems, totals, onBack, 
                 <div className="text-xl font-semibold text-stone-900">{stats.avgVariance}%</div>
               </div>
             </div>
-            <button
-              onClick={handleAutoNegotiate}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2"
-            >
-              <Sparkles className="w-4 h-4" />
-              Auto-Negotiate Minor Variances
-            </button>
+            <div className="flex gap-3">
+              <div className="relative group">
+                <button
+                  onClick={handleAutoNegotiate}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Auto-Negotiate Minor Variances
+                </button>
+                {/* Enhanced Tooltip */}
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                  Auto-accepts AI pricing for line items with variance ≤10%
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                </div>
+              </div>
+
+              <div className="relative group">
+                <button
+                  onClick={handleAutoAcceptCounter}
+                  className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 flex items-center gap-2"
+                >
+                  <HardHat className="w-4 h-4" />
+                  Auto Accept Counter
+                </button>
+                {/* Enhanced Tooltip */}
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                  Auto-accepts all contractor counter-proposals
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -2971,7 +3096,7 @@ function ContractorNegotiationScreen({ lineItems, setLineItems, totals, onBack, 
                         Accepts AI pricing
                       </div>
                     ) : (
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-stone-600">{proposal.proposedQty} {item.unit}</span>
                           <span className="text-sm font-semibold text-amber-900">
@@ -2983,6 +3108,42 @@ function ContractorNegotiationScreen({ lineItems, setLineItems, totals, onBack, 
                             {proposal.variance > 0 ? '+' : ''}{(proposal.variance * 100).toFixed(1)}% • {proposal.reason}
                           </div>
                         )}
+
+                        {/* Action buttons */}
+                        <div className="flex gap-2 pt-2 border-t border-stone-100">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const updated = {...contractorProposals};
+                              updated[item.id] = {
+                                ...updated[item.id],
+                                accepted: true,
+                                finalPrice: updated[item.id].originalPrice,
+                                counterAccepted: false
+                              };
+                              setContractorProposals(updated);
+                            }}
+                            className="flex-1 text-xs px-2 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-colors"
+                          >
+                            Accept AI Price
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const updated = {...contractorProposals};
+                              updated[item.id] = {
+                                ...updated[item.id],
+                                accepted: false,
+                                finalPrice: updated[item.id].proposedPrice,
+                                counterAccepted: true
+                              };
+                              setContractorProposals(updated);
+                            }}
+                            className="flex-1 text-xs px-2 py-1.5 bg-amber-600 text-white rounded hover:bg-amber-700 transition-colors"
+                          >
+                            Accept Counter
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -3016,8 +3177,10 @@ function ContractorNegotiationScreen({ lineItems, setLineItems, totals, onBack, 
                 const proposal = contractorProposals[item.id];
                 if (!proposal) return null;
 
-                const finalPrice = proposal.accepted ? proposal.originalPrice :
-                  (proposal.finalPrice || (proposal.originalPrice + proposal.proposedPrice) / 2);
+                const finalPrice = proposal.finalPrice ||
+                  (proposal.accepted ? proposal.originalPrice :
+                   proposal.counterAccepted ? proposal.proposedPrice :
+                   (proposal.originalPrice + proposal.proposedPrice) / 2);
 
                 return (
                   <div
@@ -3036,15 +3199,21 @@ function ContractorNegotiationScreen({ lineItems, setLineItems, totals, onBack, 
                         </span>
                       </div>
 
-                      {!proposal.accepted && (
-                        <div className="text-xs text-emerald-700 bg-emerald-50 rounded px-2 py-1">
-                          ✓ Negotiated: Split difference
-                        </div>
-                      )}
-
                       {proposal.accepted && (
                         <div className="text-xs text-emerald-700 bg-emerald-50 rounded px-2 py-1">
                           ✓ Agreed: AI pricing accepted
+                        </div>
+                      )}
+
+                      {proposal.counterAccepted && (
+                        <div className="text-xs text-amber-700 bg-amber-50 rounded px-2 py-1">
+                          ✓ Accepted: Contractor counter-proposal
+                        </div>
+                      )}
+
+                      {!proposal.accepted && !proposal.counterAccepted && (
+                        <div className="text-xs text-blue-700 bg-blue-50 rounded px-2 py-1">
+                          ⧖ Pending: Awaiting decision
                         </div>
                       )}
                     </div>
@@ -3079,8 +3248,10 @@ function ContractorNegotiationScreen({ lineItems, setLineItems, totals, onBack, 
               ({((lineItems.reduce((sum, item) => {
                 const proposal = contractorProposals[item.id];
                 if (!proposal) return sum;
-                const finalPrice = proposal.accepted ? proposal.originalPrice :
-                  (proposal.finalPrice || (proposal.originalPrice + proposal.proposedPrice) / 2);
+                const finalPrice = proposal.finalPrice ||
+                  (proposal.accepted ? proposal.originalPrice :
+                   proposal.counterAccepted ? proposal.proposedPrice :
+                   (proposal.originalPrice + proposal.proposedPrice) / 2);
                 return sum + (item.qty * finalPrice);
               }, 0) / totals.total - 1) * 100).toFixed(1)}% from original)
             </span>

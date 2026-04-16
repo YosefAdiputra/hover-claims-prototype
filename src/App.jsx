@@ -3142,76 +3142,81 @@ function Confirmation({ onReset, totals }) {
 // ============ SUCCESS POPUP ============
 function SuccessPopup({ totals, onClose, onBackToQueue, onTakeBreak }) {
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[24px] shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="p-6 pb-4 text-center">
-          <div className="w-16 h-16 mx-auto rounded-full bg-[#34C759]/10 flex items-center justify-center mb-4">
-            <CheckCircle2 className="w-8 h-8 text-[#34C759]" strokeWidth={2} />
+    <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-[fadeIn_200ms_ease-out]">
+      <div className="bg-white rounded-[24px] shadow-2xl max-w-lg w-full overflow-hidden">
+        {/* Header band with gradient */}
+        <div className="relative bg-gradient-to-br from-emerald-50 via-white to-white px-8 pt-8 pb-6 border-b border-gray-100">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-emerald-500 flex items-center justify-center shadow-md shadow-emerald-500/30 flex-shrink-0">
+              <CheckCircle2 className="w-7 h-7 text-white" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-[22px] font-semibold text-gray-900 leading-tight">Claim submitted</h2>
+              <p className="text-[14px] text-gray-500 mt-1 truncate">
+                <span className="font-mono-ui text-[13px]">{CLAIM.id}</span> → Summit Mutual
+              </p>
+            </div>
           </div>
-          <h2 className="text-[24px] font-semibold text-[#1D1D1F] mb-2">Successfully Submitted!</h2>
-          <p className="text-[15px] text-[#86868B] leading-relaxed">
-            Claim {CLAIM.id} has been sent to Xactimate and is now in Summit Mutual's review queue.
-          </p>
         </div>
 
-        {/* Claim Summary */}
-        <div className="px-6 pb-4">
-          <div className="bg-[#F5F5F7] rounded-[16px] p-4 mb-4">
-            <div className="grid grid-cols-2 gap-4 text-center">
-              <div>
-                <div className="text-[11px] uppercase tracking-wider text-[#86868B] font-medium">Total Estimate</div>
-                <div className="text-[24px] font-semibold text-[#1D1D1F] mt-1">{fmt(totals.total)}</div>
-              </div>
-              <div>
-                <div className="text-[11px] uppercase tracking-wider text-[#86868B] font-medium">Line Items</div>
-                <div className="text-[24px] font-semibold text-[#1D1D1F] mt-1">{totals.count}</div>
-              </div>
+        {/* Stats strip */}
+        <div className="px-7 pt-6 pb-5">
+          <div className="grid grid-cols-3 gap-1 bg-gray-50 rounded-2xl p-5">
+            <div className="text-center border-r border-gray-200">
+              <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold">Estimate</div>
+              <div className="text-[22px] font-semibold text-gray-900 mt-1 tabular">{fmt(totals.total)}</div>
+            </div>
+            <div className="text-center border-r border-gray-200">
+              <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold">Items</div>
+              <div className="text-[22px] font-semibold text-gray-900 mt-1 tabular">{totals.count}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold">Your time</div>
+              <div className="text-[22px] font-semibold text-emerald-600 mt-1 tabular">28m</div>
             </div>
           </div>
 
-          {/* Time Savings */}
-          <div className="bg-gradient-to-r from-[#0071E3]/5 to-[#34C759]/5 rounded-[16px] p-4 mb-6">
-            <div className="text-center mb-3">
-              <div className="text-[11px] uppercase tracking-wider text-[#86868B] font-medium">Time Saved vs Manual</div>
-              <div className="text-[32px] font-semibold text-[#0071E3] leading-none mt-1">
-                2.5<span className="text-[16px] text-[#86868B] ml-1">hours</span>
+          {/* Time saved accent row */}
+          <div className="mt-4 flex items-center justify-between gap-3 px-1">
+            <div className="flex items-center gap-2.5 text-[14px]">
+              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-blue-600" />
               </div>
+              <span className="text-gray-600">
+                Saved <span className="font-semibold text-gray-900">2.5 hours</span> vs manual drafting
+              </span>
             </div>
-            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-black/5">
-              <div className="text-center">
-                <div className="text-[10px] uppercase tracking-wider text-[#86868B]">Manual Baseline</div>
-                <div className="text-[16px] font-medium text-[#1D1D1F] mt-1">~3.0 hrs</div>
-              </div>
-              <div className="text-center">
-                <div className="text-[10px] uppercase tracking-wider text-[#86868B]">Your Time</div>
-                <div className="text-[16px] font-medium text-[#34C759] mt-1">28 min</div>
-              </div>
-            </div>
+            <span className="text-[13px] text-emerald-600 font-semibold flex items-center gap-0.5">
+              <TrendingUp className="w-3.5 h-3.5" />83%
+            </span>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="px-6 pb-6 space-y-3">
+        <div className="px-7 pb-7">
           <button
             onClick={onBackToQueue}
-            className="w-full bg-[#0071E3] hover:brightness-110 text-white px-6 py-4 rounded-[12px] text-[16px] font-semibold flex items-center justify-center gap-3 transition-all"
+            className="w-full bg-gray-900 hover:bg-gray-800 text-white px-6 py-4 rounded-2xl text-[15px] font-semibold flex items-center justify-center gap-2 transition-colors"
           >
-            Back to Claims Queue
+            Back to queue
             <ArrowRight className="w-4 h-4" />
           </button>
-          <button
-            onClick={onTakeBreak}
-            className="w-full bg-gradient-to-r from-[#34C759] to-[#30B64F] hover:brightness-110 text-white px-6 py-3 rounded-[12px] text-[15px] font-semibold flex items-center justify-center gap-3 transition-all"
-          >
-            🎮 Take a Break
-          </button>
-          <button
-            onClick={onClose}
-            className="w-full bg-[#F5F5F7] hover:bg-[#EBEBF0] text-[#1D1D1F] px-6 py-3 rounded-[12px] text-[15px] font-medium transition-all"
-          >
-            Stay on Final Review
-          </button>
+          <div className="mt-4 flex items-center justify-center gap-5 text-[13.5px]">
+            <button
+              onClick={onTakeBreak}
+              className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1.5"
+            >
+              <Activity className="w-3.5 h-3.5" />
+              Take a break
+            </button>
+            <span className="text-gray-200">|</span>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-900 transition-colors"
+            >
+              Stay here
+            </button>
+          </div>
         </div>
       </div>
     </div>
